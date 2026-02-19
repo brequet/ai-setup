@@ -1,0 +1,4 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "This file is a placeholder. Schema validation is handled by Zod in the CLI."
+}

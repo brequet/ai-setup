@@ -1,0 +1,43 @@
+{
+  "name": "Test Catalog",
+  "id": "test-catalog",
+  "version": "0.1.0",
+  "gitUrl": "https://gitlab.test/test-catalog.git",
+  "opencodeVersion": ">=1.0.0",
+  "skills": {
+    "backend-api": {
+      "hash": "sha256:8ed8ca21478795ca1f8a9fb5f17abaec65b8552085bdf7ce172c315d257bd245",
+      "path": "skills/backend-api/SKILL.md",
+      "tags": [
+        "backend",
+        "api",
+        "rest",
+        "patterns"
+      ],
+      "description": "Backend API development patterns and best practices for RESTful services",
+      "version": "1.0.0"
+    },
+    "refactor-monorepo": {
+      "hash": "sha256:563fd5e61e0aaa5dd84d0888cb043e83e7ba3ad67c19ca83a2516e26ea43c71a",
+      "path": "skills/refactor-monorepo/SKILL.md",
+      "tags": [
+        "refactor",
+        "monorepo",
+        "typescript"
+      ],
+      "description": "TypeScript monorepo refactoring patterns",
+      "version": "1.0.0"
+    },
+    "write-docs": {
+      "hash": "sha256:dd365bb6bd665c2228d4c2c79745c5f4b584b681b3f5d88c675526e39b47790d",
+      "path": "skills/write-docs/SKILL.md",
+      "tags": [
+        "docs",
+        "documentation",
+        "writing"
+      ],
+      "description": "Documentation writing assistant",
+      "version": "1.0.0"
+    }
+  }
+}

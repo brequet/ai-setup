@@ -20,13 +20,13 @@ export interface GitOperationResult {
  */
 export function isGitUrl(input: string): boolean {
   const gitUrlPatterns = [
-    /^https?:\/\//i,           // http:// or https://
-    /^git:\/\//i,              // git://
-    /^git@/i,                  // git@github.com:...
-    /^ssh:\/\//i,              // ssh://
+    /^https?:\/\//i, // http:// or https://
+    /^git:\/\//i, // git://
+    /^git@/i, // git@github.com:...
+    /^ssh:\/\//i, // ssh://
   ];
 
-  return gitUrlPatterns.some(pattern => pattern.test(input));
+  return gitUrlPatterns.some((pattern) => pattern.test(input));
 }
 
 /**
@@ -36,7 +36,7 @@ export async function checkGitAvailable(): Promise<boolean> {
   try {
     await execAsync('git --version');
     return true;
-  } catch (error) {
+  } catch {
     return false;
   }
 }
@@ -50,15 +50,16 @@ export async function checkGitAvailable(): Promise<boolean> {
 export async function cloneOrPullCatalog(
   catalogId: string,
   url: string,
-  branch: string = 'main'
+  branch: string = 'main',
 ): Promise<GitOperationResult> {
   // Check if git is available
   const gitAvailable = await checkGitAvailable();
   if (!gitAvailable) {
     return {
       success: false,
-      error: 'Git not installed. Please install Git to use Git-based catalogs.\n' +
-             'Download from: https://git-scm.com/downloads'
+      error:
+        'Git not installed. Please install Git to use Git-based catalogs.\n' +
+        'Download from: https://git-scm.com/downloads',
     };
   }
 
@@ -69,22 +70,22 @@ export async function cloneOrPullCatalog(
     if (fs.existsSync(cachePath)) {
       // Repository exists - force pull updates
       logger.debug(`Pulling updates for ${catalogId} from ${branch}...`);
-      
+
       try {
         // Fetch latest changes
         await execAsync(`git fetch origin ${branch}`, { cwd: cachePath });
-        
+
         // Force reset to remote branch (always trust remote)
         await execAsync(`git reset --hard origin/${branch}`, { cwd: cachePath });
-        
+
         logger.debug(`Successfully pulled ${catalogId}`);
       } catch (pullError) {
         // If pull fails, try to recover by re-cloning
         logger.debug(`Pull failed, attempting to re-clone: ${(pullError as Error).message}`);
-        
+
         // Remove corrupted cache
         fs.rmSync(cachePath, { recursive: true, force: true });
-        
+
         // Re-clone (fall through to clone logic below)
         return await cloneRepository(catalogId, url, branch, cachePath);
       }
@@ -106,17 +107,17 @@ async function cloneRepository(
   catalogId: string,
   url: string,
   branch: string,
-  cachePath: string
+  cachePath: string,
 ): Promise<GitOperationResult> {
   logger.debug(`Cloning ${catalogId} from ${url} (branch: ${branch})...`);
-  
+
   try {
     // Ensure cache directory exists
     ensureDir(getCatalogCacheDir());
-    
+
     // Shallow clone (--depth 1) for efficiency
     await execAsync(`git clone --depth 1 --branch ${branch} ${url} ${cachePath}`);
-    
+
     logger.debug(`Successfully cloned ${catalogId}`);
     return { success: true };
   } catch (error) {
@@ -129,45 +130,57 @@ async function cloneRepository(
  */
 function handleGitError(error: Error): GitOperationResult {
   const errorMsg = error.message.toLowerCase();
-  
+
   // Repository not found (404)
-  if (errorMsg.includes('not found') || errorMsg.includes('repository') && errorMsg.includes('does not exist')) {
+  if (
+    errorMsg.includes('not found') ||
+    (errorMsg.includes('repository') && errorMsg.includes('does not exist'))
+  ) {
     return {
       success: false,
-      error: 'Repository not found. Check the URL and ensure the repository exists.'
+      error: 'Repository not found. Check the URL and ensure the repository exists.',
     };
   }
-  
+
   // Authentication/permission issues
-  if (errorMsg.includes('authentication') || errorMsg.includes('permission') || errorMsg.includes('access denied')) {
+  if (
+    errorMsg.includes('authentication') ||
+    errorMsg.includes('permission') ||
+    errorMsg.includes('access denied')
+  ) {
     return {
       success: false,
-      error: 'Authentication required. Ensure you have access to this repository.\n' +
-             'For private repos, set up SSH keys or use a personal access token.'
+      error:
+        'Authentication required. Ensure you have access to this repository.\n' +
+        'For private repos, set up SSH keys or use a personal access token.',
     };
   }
-  
+
   // Branch not found
   if (errorMsg.includes('branch') || errorMsg.includes('reference')) {
     return {
       success: false,
-      error: 'Branch not found. Check the branch name or try with --branch main'
+      error: 'Branch not found. Check the branch name or try with --branch main',
     };
   }
-  
+
   // Network errors
-  if (errorMsg.includes('network') || errorMsg.includes('connection') || errorMsg.includes('timeout')) {
+  if (
+    errorMsg.includes('network') ||
+    errorMsg.includes('connection') ||
+    errorMsg.includes('timeout')
+  ) {
     return {
       success: false,
-      error: 'Network connection failed. Check your internet connection and try again.'
+      error: 'Network connection failed. Check your internet connection and try again.',
     };
   }
-  
+
   // Generic git error
   const firstLine = error.message.split('\n')[0];
   return {
     success: false,
-    error: `Git operation failed: ${firstLine}`
+    error: `Git operation failed: ${firstLine}`,
   };
 }
 

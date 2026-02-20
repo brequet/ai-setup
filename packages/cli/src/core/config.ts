@@ -7,21 +7,21 @@ import { logger } from '../utils/logger.js';
  */
 export interface CatalogEntry {
   type: 'local' | 'git';
-  path?: string;      // For local catalogs only
-  url?: string;       // For git catalogs only
-  branch?: string;    // Git branch (default: 'main')
+  path?: string; // For local catalogs only
+  url?: string; // For git catalogs only
+  branch?: string; // Git branch (default: 'main')
   priority: number;
   active: boolean;
   lastSynced?: string; // ISO timestamp for git catalogs
 }
 
 export interface InstalledSkill {
-  catalog: string;      // catalog ID (e.g., "brequet/bre-ia-catalog" or "test-catalog")
+  catalog: string; // catalog ID (e.g., "brequet/bre-ia-catalog" or "test-catalog")
 }
 
 export interface UserConfig {
   catalogs: Record<string, CatalogEntry>;
-  installed: Record<string, InstalledSkill>;  // key is skill name (e.g., "frontend", "researcher")
+  installed: Record<string, InstalledSkill>; // key is skill name (e.g., "frontend", "researcher")
 }
 
 /**
@@ -30,7 +30,7 @@ export interface UserConfig {
  */
 export function loadConfig(): UserConfig {
   const configPath = getUserConfigPath();
-  
+
   if (!fs.existsSync(configPath)) {
     logger.debug('Config file not found, creating default config');
     return {
@@ -59,10 +59,10 @@ export function loadConfig(): UserConfig {
 export function saveConfig(config: UserConfig): void {
   const configPath = getUserConfigPath();
   const configDir = getConfigDir();
-  
+
   // Ensure config directory exists
   ensureDir(configDir);
-  
+
   try {
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     logger.debug(`Saved config to ${configPath}`);
@@ -90,18 +90,14 @@ export function removeCatalog(config: UserConfig, id: string): void {
  * Get the next available priority for a new catalog
  */
 export function getNextPriority(config: UserConfig): number {
-  const priorities = Object.values(config.catalogs).map(c => c.priority);
+  const priorities = Object.values(config.catalogs).map((c) => c.priority);
   return priorities.length === 0 ? 1 : Math.max(...priorities) + 1;
 }
 
 /**
  * Track a skill installation
  */
-export function trackInstallation(
-  config: UserConfig,
-  skillName: string,
-  catalogId: string
-): void {
+export function trackInstallation(config: UserConfig, skillName: string, catalogId: string): void {
   config.installed[skillName] = { catalog: catalogId };
 }
 

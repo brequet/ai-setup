@@ -56,10 +56,12 @@ export async function catalogSkillAdd(name?: string, options: SkillAddOptions = 
   logger.info('Adding skill to catalog...\n');
 
   // Gather inputs (args or prompts)
-  const rawName = name || await input({ 
-    message: 'Skill name (lowercase, alphanumeric, hyphens):',
-    required: true,
-  });
+  const rawName =
+    name ||
+    (await input({
+      message: 'Skill name (lowercase, alphanumeric, hyphens):',
+      required: true,
+    }));
 
   // Convert and validate skill name
   const skillName = toSkillName(rawName);
@@ -75,14 +77,16 @@ export async function catalogSkillAdd(name?: string, options: SkillAddOptions = 
     logger.debug(`Normalized skill name: "${rawName}" → "${skillName}"`);
   }
 
-  const description = options.description || await input({ 
-    message: 'Description (1-1024 chars):',
-    default: `Skill for ${skillName}`,
-    validate: (value) => {
-      const result = validateSkillDescription(value);
-      return result.valid ? true : result.error!;
-    },
-  });
+  const description =
+    options.description ||
+    (await input({
+      message: 'Description (1-1024 chars):',
+      default: `Skill for ${skillName}`,
+      validate: (value) => {
+        const result = validateSkillDescription(value);
+        return result.valid ? true : result.error!;
+      },
+    }));
 
   // Validate description
   const descValidation = validateSkillDescription(description);
@@ -91,10 +95,12 @@ export async function catalogSkillAdd(name?: string, options: SkillAddOptions = 
     process.exit(1);
   }
 
-  const tagsInput = options.tags || await input({ 
-    message: 'Tags (comma-separated, optional):',
-    default: '',
-  });
+  const tagsInput =
+    options.tags ||
+    (await input({
+      message: 'Tags (comma-separated, optional):',
+      default: '',
+    }));
 
   const tags = tagsInput
     .split(',')

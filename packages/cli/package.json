@@ -9,7 +9,11 @@
   "scripts": {
     "dev": "tsx watch src/cli.ts",
     "build": "tsc",
-    "prepublishOnly": "pnpm build"
+    "prepublishOnly": "pnpm build",
+    "lint": "oxlint src",
+    "lint:fix": "oxlint --fix src",
+    "format": "oxfmt src",
+    "format:check": "oxfmt --check src"
   },
   "files": [
     "dist"
@@ -33,6 +37,8 @@
   "devDependencies": {
     "@types/inquirer": "^9.0.7",
     "@types/node": "^22.10.5",
+    "oxfmt": "^0.34.0",
+    "oxlint": "^1.49.0",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3"
   }

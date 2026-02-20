@@ -25,9 +25,10 @@ export async function catalogBuild() {
     logger.warn('No skills directory found');
     catalog.skills = {};
   } else {
-    const skillFolders = fs.readdirSync(skillsDir, { withFileTypes: true })
-      .filter(dirent => dirent.isDirectory())
-      .map(dirent => dirent.name);
+    const skillFolders = fs
+      .readdirSync(skillsDir, { withFileTypes: true })
+      .filter((dirent) => dirent.isDirectory())
+      .map((dirent) => dirent.name);
 
     logger.debug(`Found ${skillFolders.length} skill folders`);
 
@@ -35,7 +36,7 @@ export async function catalogBuild() {
 
     for (const skillName of skillFolders) {
       const skillPath = path.join(skillsDir, skillName, 'SKILL.md');
-      
+
       if (!fs.existsSync(skillPath)) {
         logger.warn(`Skipping ${skillName} - no SKILL.md found`);
         continue;

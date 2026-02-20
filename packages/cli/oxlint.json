@@ -1,0 +1,10 @@
+{
+  "rules": {
+    "typescript/no-explicit-any": "warn",
+    "typescript/no-unused-vars": "error",
+    "typescript/no-non-null-assertion": "warn",
+    "unicorn/prefer-node-protocol": "error",
+    "unicorn/no-array-for-each": "warn",
+    "import/no-default-export": "off"
+  }
+}

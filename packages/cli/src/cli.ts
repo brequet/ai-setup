@@ -30,9 +30,7 @@ program
   });
 
 // Catalog commands
-const catalog = program
-  .command('catalog')
-  .description('Manage catalog (maintainer commands)');
+const catalog = program.command('catalog').description('Manage catalog (maintainer commands)');
 
 catalog
   .command('init')

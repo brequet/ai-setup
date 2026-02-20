@@ -29,9 +29,9 @@ export interface RemovedSkill {
  * Comparison result between catalog and installed skills
  */
 export interface DiffResult {
-  new: AvailableSkill[];      // Skills in catalog but not installed
-  updated: AvailableSkill[];  // Skills installed but content changed
-  removed: RemovedSkill[];    // Skills installed but no longer in catalog
+  new: AvailableSkill[]; // Skills in catalog but not installed
+  updated: AvailableSkill[]; // Skills installed but content changed
+  removed: RemovedSkill[]; // Skills installed but no longer in catalog
   unchanged: AvailableSkill[]; // Skills installed and unchanged
 }
 
@@ -42,11 +42,11 @@ export interface DiffResult {
 function computeActualFileHash(skillName: string): string | null {
   const skillsDir = getOpenCodeSkillsPath();
   const skillPath = path.join(skillsDir, skillName, 'SKILL.md');
-  
+
   if (!fs.existsSync(skillPath)) {
     return null;
   }
-  
+
   try {
     return computeFileHash(skillPath);
   } catch (error) {
@@ -60,7 +60,7 @@ function computeActualFileHash(skillName: string): string | null {
  */
 export function compareWithCatalog(
   config: UserConfig,
-  catalogs: Array<{ id: string; entry: CatalogEntry }>
+  catalogs: Array<{ id: string; entry: CatalogEntry }>,
 ): DiffResult {
   const result: DiffResult = {
     new: [],
@@ -104,14 +104,16 @@ export function compareWithCatalog(
           // Check if this skill belongs to this catalog
           if (installedSkill.catalog !== catalogId) {
             // Skill installed from different catalog, skip
-            logger.debug(`Skill ${skillName} installed from ${installedSkill.catalog}, not ${catalogId}`);
+            logger.debug(
+              `Skill ${skillName} installed from ${installedSkill.catalog}, not ${catalogId}`,
+            );
             continue;
           }
 
           // Check if hash differs by comparing actual files
           const actualFileHash = computeActualFileHash(skillName);
           const fileMissing = actualFileHash === null;
-          
+
           if (fileMissing) {
             result.updated.push(availableSkill);
           } else {
@@ -122,13 +124,15 @@ export function compareWithCatalog(
                 catalogSourceHash = computeFileHash(skill.sourcePath);
               }
             } catch (error) {
-              logger.debug(`Failed to compute catalog source hash for ${skillName}: ${(error as Error).message}`);
+              logger.debug(
+                `Failed to compute catalog source hash for ${skillName}: ${(error as Error).message}`,
+              );
             }
-            
+
             // Compare actual installed file hash with catalog source file hash
             // If they differ, the catalog has been updated
             const needsUpdate = catalogSourceHash !== null && actualFileHash !== catalogSourceHash;
-            
+
             if (needsUpdate) {
               result.updated.push(availableSkill);
             } else {

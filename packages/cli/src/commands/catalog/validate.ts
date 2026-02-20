@@ -22,7 +22,7 @@ export async function catalogValidate() {
 
   // Read all skill directories
   const entries = fs.readdirSync(skillsDir, { withFileTypes: true });
-  const skillDirs = entries.filter(e => e.isDirectory());
+  const skillDirs = entries.filter((e) => e.isDirectory());
 
   if (skillDirs.length === 0) {
     logger.warn('No skills found in skills/ directory');
@@ -66,7 +66,11 @@ export async function catalogValidate() {
         errors.push(`${skillName}: Missing 'name' field in frontmatter`);
         hasErrors = true;
       } else if (data.name !== skillName) {
-        console.log(chalk.yellow(`  ⚠ Warning: frontmatter name "${data.name}" doesn't match folder name "${skillName}"`));
+        console.log(
+          chalk.yellow(
+            `  ⚠ Warning: frontmatter name "${data.name}" doesn't match folder name "${skillName}"`,
+          ),
+        );
       }
 
       if (!data.description) {
@@ -92,7 +96,6 @@ export async function catalogValidate() {
       if (!hasErrors) {
         console.log(chalk.green(`  ✓ Valid`));
       }
-
     } catch (error) {
       console.log(chalk.red(`  ✖ Failed to parse: ${(error as Error).message}`));
       errors.push(`${skillName}: Parse error - ${(error as Error).message}`);
@@ -105,11 +108,13 @@ export async function catalogValidate() {
   // Summary
   if (hasErrors) {
     logger.error(`Validation failed with ${errors.length} error${errors.length === 1 ? '' : 's'}:`);
-    errors.forEach(err => {
+    errors.forEach((err) => {
       console.error(chalk.red(`  - ${err}`));
     });
     process.exit(1);
   } else {
-    logger.success(`✨ All ${skillCount} skill${skillCount === 1 ? '' : 's'} validated successfully!`);
+    logger.success(
+      `✨ All ${skillCount} skill${skillCount === 1 ? '' : 's'} validated successfully!`,
+    );
   }
 }

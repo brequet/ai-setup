@@ -1,8 +1,8 @@
-import fs from "node:fs";
-import path from "node:path";
-import { input } from "@inquirer/prompts";
-import { logger } from "../../utils/logger.js";
-import type { Catalog } from "../../core/schema.js";
+import fs from 'node:fs';
+import path from 'node:path';
+import { input } from '@inquirer/prompts';
+import { logger } from '../../utils/logger.js';
+import type { Catalog } from '../../core/schema.js';
 
 interface NewOptions {
   name?: string;
@@ -12,27 +12,27 @@ interface NewOptions {
 }
 
 export async function catalogNew(options: NewOptions = {}) {
-  logger.info("Creating new catalog...\n");
+  logger.info('Creating new catalog...\n');
 
   // Gather inputs (args or prompts)
   const name =
     options.name ||
     (await input({
-      message: "Catalog name:",
-      default: "BRE AI Agents Catalog",
+      message: 'Catalog name:',
+      default: 'BRE AI Agents Catalog',
     }));
 
   const id =
     options.id ||
     (await input({
-      message: "Catalog ID (kebab-case):",
-      default: "bre-company",
+      message: 'Catalog ID (kebab-case):',
+      default: 'bre-company',
     }));
 
   const gitUrl =
     options.gitUrl ||
     (await input({
-      message: "Git repository URL (optional):",
+      message: 'Git repository URL (optional):',
       required: false,
     }));
 
@@ -42,9 +42,9 @@ export async function catalogNew(options: NewOptions = {}) {
 
   // Create directory structure
   const dirs = [
-    path.join(catalogPath, "skills"),
-    path.join(catalogPath, "mcp"),
-    path.join(catalogPath, "meta"),
+    path.join(catalogPath, 'skills'),
+    path.join(catalogPath, 'mcp'),
+    path.join(catalogPath, 'meta'),
   ];
 
   for (const dir of dirs) {
@@ -58,28 +58,27 @@ export async function catalogNew(options: NewOptions = {}) {
   const catalog: Catalog = {
     name,
     id,
-    version: "0.1.0",
+    version: '0.1.0',
     gitUrl: gitUrl || undefined,
-    opencodeVersion: ">=1.0.0",
+    opencodeVersion: '>=1.0.0',
     skills: {},
   };
 
-  const catalogJsonPath = path.join(catalogPath, "meta", "catalog.json");
+  const catalogJsonPath = path.join(catalogPath, 'meta', 'catalog.json');
   fs.writeFileSync(catalogJsonPath, JSON.stringify(catalog, null, 2));
-  logger.success("Created meta/catalog.json");
+  logger.success('Created meta/catalog.json');
 
   // Create schema reference
-  const schemaPath = path.join(catalogPath, "meta", "schema.json");
+  const schemaPath = path.join(catalogPath, 'meta', 'schema.json');
   const schemaReference = {
-    $schema: "https://json-schema.org/draft/2020-12/schema",
-    description:
-      "This file is a placeholder. Schema validation is handled by Zod in the CLI.",
+    $schema: 'https://json-schema.org/draft/2020-12/schema',
+    description: 'This file is a placeholder. Schema validation is handled by Zod in the CLI.',
   };
   fs.writeFileSync(schemaPath, JSON.stringify(schemaReference, null, 2));
-  logger.success("Created meta/schema.json");
+  logger.success('Created meta/schema.json');
 
   // Create README
-  const readmePath = path.join(catalogPath, "README.md");
+  const readmePath = path.join(catalogPath, 'README.md');
   const readme = `# ${name}
 
 Catalog ID: \`${id}\`
@@ -108,13 +107,11 @@ npx @brequet/ai-setup catalog build
 \`\`\`
 `;
   fs.writeFileSync(readmePath, readme);
-  logger.success("Created README.md");
+  logger.success('Created README.md');
 
-  console.log("\n" + "✨ Catalog created successfully!\n");
+  console.log('\n' + '✨ Catalog created successfully!\n');
   logger.info(`Next steps:`);
-  logger.info(
-    `  1. Add skills: npx @brequet/ai-setup catalog skill add <name>`,
-  );
+  logger.info(`  1. Add skills: npx @brequet/ai-setup catalog skill add <name>`);
   logger.info(`  2. Validate:   npx @brequet/ai-setup catalog validate`);
   logger.info(`  3. Build:      npx @brequet/ai-setup catalog build`);
 }

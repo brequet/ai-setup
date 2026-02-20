@@ -1,6 +1,6 @@
-import os from "node:os";
-import path from "node:path";
-import fs from "node:fs";
+import os from 'node:os';
+import path from 'node:path';
+import fs from 'node:fs';
 
 /**
  * Get the user's home directory
@@ -14,7 +14,7 @@ export function getHomeDir(): string {
  * Uses: ~/.config/ai-setup/
  */
 export function getConfigDir(): string {
-  return path.join(getHomeDir(), ".config", "ai-setup");
+  return path.join(getHomeDir(), '.config', 'ai-setup');
 }
 
 /**
@@ -22,7 +22,7 @@ export function getConfigDir(): string {
  * Uses: ~/.config/ai-setup/config.json
  */
 export function getUserConfigPath(): string {
-  return path.join(getConfigDir(), "config.json");
+  return path.join(getConfigDir(), 'config.json');
 }
 
 /**
@@ -38,16 +38,16 @@ export function detectOpenCodeSkillsPath(): string | null {
   const homeDir = getHomeDir();
 
   const candidates = [
-    path.join(homeDir, ".config", "opencode", "skills"),
+    path.join(homeDir, '.config', 'opencode', 'skills'),
     path.join(
-      process.env.APPDATA || path.join(homeDir, "AppData", "Roaming"),
-      "opencode",
-      "skills",
+      process.env.APPDATA || path.join(homeDir, 'AppData', 'Roaming'),
+      'opencode',
+      'skills',
     ),
     path.join(
-      process.env.LOCALAPPDATA || path.join(homeDir, "AppData", "Local"),
-      "opencode",
-      "skills",
+      process.env.LOCALAPPDATA || path.join(homeDir, 'AppData', 'Local'),
+      'opencode',
+      'skills',
     ),
   ];
 
@@ -66,7 +66,7 @@ export function detectOpenCodeSkillsPath(): string | null {
  */
 export function getDefaultOpenCodeSkillsPath(): string {
   const homeDir = getHomeDir();
-  return path.join(homeDir, ".config", "opencode", "skills");
+  return path.join(homeDir, '.config', 'opencode', 'skills');
 }
 
 /**
@@ -81,7 +81,7 @@ export function getOpenCodeSkillsPath(): string {
  * Uses: ~/.config/ai-setup/.cache/
  */
 export function getCatalogCacheDir(): string {
-  return path.join(getConfigDir(), ".cache");
+  return path.join(getConfigDir(), '.cache');
 }
 
 /**

@@ -34,12 +34,12 @@ function parseSkillFrontmatter(skillPath: string): SkillFrontmatter | null {
   try {
     const content = fs.readFileSync(skillPath, 'utf-8');
     const { data } = matter(content);
-    
+
     if (!data.name || !data.description) {
       logger.warn(`Invalid SKILL.md frontmatter in ${skillPath}: missing name or description`);
       return null;
     }
-    
+
     return data as SkillFrontmatter;
   } catch (error) {
     logger.warn(`Failed to parse SKILL.md frontmatter: ${(error as Error).message}`);
@@ -54,37 +54,37 @@ function parseSkillFrontmatter(skillPath: string): SkillFrontmatter | null {
 export function discoverSkills(catalogPath: string): Map<string, DiscoveredSkill> {
   const skills = new Map<string, DiscoveredSkill>();
   const skillsDir = path.join(catalogPath, 'skills');
-  
+
   if (!fs.existsSync(skillsDir)) {
     logger.debug(`No skills directory found in ${catalogPath}`);
     return skills;
   }
-  
+
   try {
     const entries = fs.readdirSync(skillsDir, { withFileTypes: true });
-    
+
     for (const entry of entries) {
       if (!entry.isDirectory()) {
         continue;
       }
-      
+
       const skillPath = path.join(skillsDir, entry.name, 'SKILL.md');
-      
+
       if (!fs.existsSync(skillPath)) {
         logger.debug(`No SKILL.md found in ${entry.name}, skipping`);
         continue;
       }
-      
+
       const frontmatter = parseSkillFrontmatter(skillPath);
       if (!frontmatter) {
         continue;
       }
-      
+
       // Parse tags from metadata
-      const tags = frontmatter.metadata?.tags 
-        ? frontmatter.metadata.tags.split(',').map(t => t.trim())
+      const tags = frontmatter.metadata?.tags
+        ? frontmatter.metadata.tags.split(',').map((t) => t.trim())
         : [];
-      
+
       skills.set(frontmatter.name, {
         name: frontmatter.name,
         description: frontmatter.description,
@@ -92,13 +92,13 @@ export function discoverSkills(catalogPath: string): Map<string, DiscoveredSkill
         sourcePath: skillPath,
         folderName: entry.name,
       });
-      
+
       logger.debug(`Discovered skill: ${frontmatter.name} from ${entry.name}`);
     }
   } catch (error) {
     logger.warn(`Failed to discover skills in ${catalogPath}: ${(error as Error).message}`);
   }
-  
+
   return skills;
 }
 
@@ -116,11 +116,11 @@ export function extractCatalogId(pathOrUrl: string): string {
     if (match) {
       return match[1];
     }
-    
+
     // Fallback: use last part of URL
     return path.basename(pathOrUrl, '.git');
   }
-  
+
   // Local path: use folder name
   return path.basename(pathOrUrl);
 }

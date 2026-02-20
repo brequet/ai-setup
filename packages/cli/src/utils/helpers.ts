@@ -20,9 +20,10 @@ export function validateSkillName(name: string): { valid: boolean; error?: strin
   }
 
   if (!nameRegex.test(name)) {
-    return { 
-      valid: false, 
-      error: 'Skill name must be lowercase alphanumeric with single hyphen separators (e.g., "my-skill")' 
+    return {
+      valid: false,
+      error:
+        'Skill name must be lowercase alphanumeric with single hyphen separators (e.g., "my-skill")',
     };
   }
 
@@ -40,9 +41,9 @@ export function toSkillName(str: string): string {
   return str
     .trim()
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')  // Replace non-alphanumeric with hyphen
-    .replace(/--+/g, '-')          // Replace consecutive hyphens
-    .replace(/^-|-$/g, '');        // Remove leading/trailing hyphens
+    .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric with hyphen
+    .replace(/--+/g, '-') // Replace consecutive hyphens
+    .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
 }
 
 /**

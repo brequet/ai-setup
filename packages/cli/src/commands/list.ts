@@ -1,27 +1,26 @@
-import chalk from "chalk";
-import { logger } from "../utils/logger.js";
-import { loadConfig, getActiveCatalogs } from "../core/config.js";
-import { getUserConfigPath, getOpenCodeSkillsPath } from "../utils/paths.js";
-import { compareWithCatalog, getDiffSummary } from "../core/diff.js";
-import { discoverSkills } from "../core/discovery.js";
-import { resolveCatalogPath } from "../core/installer.js";
-import fs from "node:fs";
-import path from "node:path";
+import chalk from 'chalk';
+import { logger } from '../utils/logger.js';
+import { loadConfig, getActiveCatalogs } from '../core/config.js';
+import { getUserConfigPath, getOpenCodeSkillsPath } from '../utils/paths.js';
+import { compareWithCatalog, getDiffSummary } from '../core/diff.js';
+import { discoverSkills } from '../core/discovery.js';
+import { resolveCatalogPath } from '../core/installer.js';
+import fs from 'node:fs';
 
 export async function list() {
   const config = loadConfig();
   const activeCatalogs = getActiveCatalogs(config);
 
-  console.log("");
-  console.log(chalk.bold("Registered Catalogs"));
-  console.log(chalk.dim("─".repeat(60)));
+  console.log('');
+  console.log(chalk.bold('Registered Catalogs'));
+  console.log(chalk.dim('─'.repeat(60)));
 
   const catalogEntries = Object.entries(config.catalogs);
 
   if (catalogEntries.length === 0) {
-    console.log(chalk.yellow("No catalogs registered"));
-    console.log("");
-    logger.info("Add a catalog: npx @brequet/ai-setup add <catalog-path>");
+    console.log(chalk.yellow('No catalogs registered'));
+    console.log('');
+    logger.info('Add a catalog: npx @brequet/ai-setup add <catalog-path>');
     return;
   }
 
@@ -37,80 +36,73 @@ export async function list() {
       const catalogPath = resolveCatalogPath(id, entry);
       const skills = discoverSkills(catalogPath);
       const skillCount = skills.size;
-      const statusIcon = entry.active ? chalk.green("●") : chalk.gray("○");
+      const statusIcon = entry.active ? chalk.green('●') : chalk.gray('○');
 
       // Calculate updates for this catalog
-      const catalogUpdates = diff.updated.filter(
-        (s) => s.catalogId === id,
-      ).length;
+      const catalogUpdates = diff.updated.filter((s) => s.catalogId === id).length;
       const catalogNew = diff.new.filter((s) => s.catalogId === id).length;
 
-      let updateInfo = "";
+      let updateInfo = '';
       if (catalogUpdates > 0 || catalogNew > 0) {
         const parts = [];
         if (catalogNew > 0) parts.push(`${catalogNew} new`);
         if (catalogUpdates > 0)
-          parts.push(
-            `${catalogUpdates} update${catalogUpdates === 1 ? "" : "s"}`,
-          );
-        updateInfo = chalk.blue(` • ${parts.join(", ")}`);
+          parts.push(`${catalogUpdates} update${catalogUpdates === 1 ? '' : 's'}`);
+        updateInfo = chalk.blue(` • ${parts.join(', ')}`);
       }
 
-      console.log("");
+      console.log('');
       console.log(
         `${statusIcon} ${chalk.bold(id)} ${chalk.dim(`(priority: ${entry.priority})`)}${updateInfo}`,
       );
-      console.log(`  ${chalk.dim("Type:")}     ${entry.type}`);
+      console.log(`  ${chalk.dim('Type:')}     ${entry.type}`);
 
-      if (entry.type === "git") {
-        console.log(`  ${chalk.dim("URL:")}      ${entry.url}`);
-        console.log(`  ${chalk.dim("Branch:")}   ${entry.branch || "main"}`);
+      if (entry.type === 'git') {
+        console.log(`  ${chalk.dim('URL:')}      ${entry.url}`);
+        console.log(`  ${chalk.dim('Branch:')}   ${entry.branch || 'main'}`);
         if (entry.lastSynced) {
           const syncedDate = new Date(entry.lastSynced).toLocaleString();
-          console.log(`  ${chalk.dim("Synced:")}   ${syncedDate}`);
+          console.log(`  ${chalk.dim('Synced:')}   ${syncedDate}`);
         }
       } else {
-        console.log(`  ${chalk.dim("Path:")}     ${entry.path}`);
+        console.log(`  ${chalk.dim('Path:')}     ${entry.path}`);
       }
 
-      console.log(`  ${chalk.dim("Skills:")}   ${skillCount} available`);
+      console.log(`  ${chalk.dim('Skills:')}   ${skillCount} available`);
       console.log(
-        `  ${chalk.dim("Status:")}   ${entry.active ? chalk.green("active") : chalk.gray("inactive")}`,
+        `  ${chalk.dim('Status:')}   ${entry.active ? chalk.green('active') : chalk.gray('inactive')}`,
       );
     } catch (error) {
-      console.log("");
+      console.log('');
       console.log(
-        `${chalk.red("✖")} ${chalk.bold(id)} ${chalk.dim(`(priority: ${entry.priority})`)}`,
+        `${chalk.red('✖')} ${chalk.bold(id)} ${chalk.dim(`(priority: ${entry.priority})`)}`,
       );
-      console.log(`  ${chalk.red("Error:")} ${(error as Error).message}`);
-      if (entry.type === "local") {
-        console.log(`  ${chalk.dim("Path:")}  ${entry.path}`);
+      console.log(`  ${chalk.red('Error:')} ${(error as Error).message}`);
+      if (entry.type === 'local') {
+        console.log(`  ${chalk.dim('Path:')}  ${entry.path}`);
       } else {
-        console.log(`  ${chalk.dim("URL:")}   ${entry.url}`);
+        console.log(`  ${chalk.dim('URL:')}   ${entry.url}`);
       }
     }
   }
 
-  console.log("");
-  console.log(chalk.dim("─".repeat(60)));
+  console.log('');
+  console.log(chalk.dim('─'.repeat(60)));
 
   // Installed skills section
-  console.log("");
-  console.log(chalk.bold("Installed Skills"));
-  console.log(chalk.dim("─".repeat(60)));
+  console.log('');
+  console.log(chalk.bold('Installed Skills'));
+  console.log(chalk.dim('─'.repeat(60)));
 
   const installedEntries = Object.entries(config.installed);
 
   if (installedEntries.length === 0) {
-    console.log(chalk.yellow("No skills installed"));
-    console.log("");
-    logger.info("Install skills: npx @brequet/ai-setup skills");
+    console.log(chalk.yellow('No skills installed'));
+    console.log('');
+    logger.info('Install skills: npx @brequet/ai-setup skills');
   } else {
     // Group by catalog
-    const byCatalog = new Map<
-      string,
-      Array<[string, (typeof config.installed)[string]]>
-    >();
+    const byCatalog = new Map<string, Array<[string, (typeof config.installed)[string]]>>();
 
     for (const entry of installedEntries) {
       const catalogId = entry[1].catalog;
@@ -133,39 +125,34 @@ export async function list() {
         removedSkillNames.has(skillName),
       ).length;
 
-      let catalogStatus = "";
+      let catalogStatus = '';
       if (catalogUpdateCount > 0 || catalogRemovedCount > 0) {
         const parts = [];
         if (catalogUpdateCount > 0)
           parts.push(
-            chalk.blue(
-              `${catalogUpdateCount} update${catalogUpdateCount === 1 ? "" : "s"}`,
-            ),
+            chalk.blue(`${catalogUpdateCount} update${catalogUpdateCount === 1 ? '' : 's'}`),
           );
-        if (catalogRemovedCount > 0)
-          parts.push(chalk.yellow(`${catalogRemovedCount} removed`));
-        catalogStatus = ` • ${parts.join(", ")}`;
+        if (catalogRemovedCount > 0) parts.push(chalk.yellow(`${catalogRemovedCount} removed`));
+        catalogStatus = ` • ${parts.join(', ')}`;
       }
 
-      console.log("");
+      console.log('');
       console.log(
         chalk.bold(`  ${catalogId}`) +
-          chalk.dim(
-            ` (${skills.length} skill${skills.length === 1 ? "" : "s"})`,
-          ) +
+          chalk.dim(` (${skills.length} skill${skills.length === 1 ? '' : 's'})`) +
           catalogStatus,
       );
 
-      for (const [skillName, skillData] of skills) {
-        let statusIcon = chalk.green("✓");
-        let statusText = "";
+      for (const [skillName] of skills) {
+        let statusIcon = chalk.green('✓');
+        let statusText = '';
 
         if (updatedSkills.has(skillName)) {
-          statusIcon = chalk.blue("↻");
-          statusText = chalk.blue(" (update available)");
+          statusIcon = chalk.blue('↻');
+          statusText = chalk.blue(' (update available)');
         } else if (removedSkillNames.has(skillName)) {
-          statusIcon = chalk.yellow("⚠");
-          statusText = chalk.yellow(" (removed from catalog)");
+          statusIcon = chalk.yellow('⚠');
+          statusText = chalk.yellow(' (removed from catalog)');
         }
 
         console.log(`    ${statusIcon} ${skillName}${statusText}`);
@@ -175,58 +162,56 @@ export async function list() {
     // Detect "other" skills (custom skills not from any catalog)
     const skillsDir = getOpenCodeSkillsPath();
     if (fs.existsSync(skillsDir)) {
-      const allSkillDirs = fs.readdirSync(skillsDir, { withFileTypes: true })
-        .filter(dirent => dirent.isDirectory())
-        .map(dirent => dirent.name);
-      
+      const allSkillDirs = fs
+        .readdirSync(skillsDir, { withFileTypes: true })
+        .filter((dirent) => dirent.isDirectory())
+        .map((dirent) => dirent.name);
+
       const trackedSkills = new Set(Object.keys(config.installed));
-      const otherSkills = allSkillDirs.filter(name => !trackedSkills.has(name));
+      const otherSkills = allSkillDirs.filter((name) => !trackedSkills.has(name));
 
       if (otherSkills.length > 0) {
-        console.log("");
+        console.log('');
         console.log(
           chalk.bold(`  Other skills`) +
             chalk.dim(
-              ` (${otherSkills.length} custom skill${otherSkills.length === 1 ? "" : "s"})`,
+              ` (${otherSkills.length} custom skill${otherSkills.length === 1 ? '' : 's'})`,
             ),
         );
 
         for (const skillName of otherSkills) {
-          console.log(`    ${chalk.dim("○")} ${skillName} ${chalk.dim("(not from any catalog)")}`);
+          console.log(`    ${chalk.dim('○')} ${skillName} ${chalk.dim('(not from any catalog)')}`);
         }
       }
     }
 
-    console.log("");
-    console.log(chalk.dim("─".repeat(60)));
+    console.log('');
+    console.log(chalk.dim('─'.repeat(60)));
     console.log(
-      `Total: ${installedEntries.length} skill${installedEntries.length === 1 ? "" : "s"} installed`,
+      `Total: ${installedEntries.length} skill${installedEntries.length === 1 ? '' : 's'} installed`,
     );
 
     if (summary.hasChanges) {
-      console.log("");
+      console.log('');
       const changeParts = [];
       if (summary.updatedCount > 0)
         changeParts.push(
-          chalk.blue(
-            `${summary.updatedCount} update${summary.updatedCount === 1 ? "" : "s"}`,
-          ),
+          chalk.blue(`${summary.updatedCount} update${summary.updatedCount === 1 ? '' : 's'}`),
         );
-      if (summary.newCount > 0)
-        changeParts.push(chalk.green(`${summary.newCount} new`));
+      if (summary.newCount > 0) changeParts.push(chalk.green(`${summary.newCount} new`));
       if (summary.removedCount > 0)
         changeParts.push(chalk.yellow(`${summary.removedCount} removed`));
 
-      console.log(chalk.dim("Changes available: ") + changeParts.join(", "));
+      console.log(chalk.dim('Changes available: ') + changeParts.join(', '));
     }
   }
 
   // Show available (not installed) skills
   if (diff.new.length > 0) {
-    console.log("");
-    console.log(chalk.bold("Available (not installed)"));
-    console.log(chalk.dim("─".repeat(60)));
-    console.log("");
+    console.log('');
+    console.log(chalk.bold('Available (not installed)'));
+    console.log(chalk.dim('─'.repeat(60)));
+    console.log('');
 
     // Group by catalog
     const newByCatalog = new Map<string, typeof diff.new>();
@@ -241,22 +226,18 @@ export async function list() {
       console.log(chalk.bold(`  ${catalogId}`));
       for (const availableSkill of skills) {
         console.log(
-          `    ${chalk.dim("○")} ${availableSkill.skillName} ${chalk.dim("- " + availableSkill.skill.description)}`,
+          `    ${chalk.dim('○')} ${availableSkill.skillName} ${chalk.dim('- ' + availableSkill.skill.description)}`,
         );
       }
-      console.log("");
+      console.log('');
     }
   }
 
   if (summary.hasChanges) {
-    console.log(
-      chalk.dim("💡 Run ") +
-        chalk.bold("skills") +
-        chalk.dim(" to install updates"),
-    );
+    console.log(chalk.dim('💡 Run ') + chalk.bold('skills') + chalk.dim(' to install updates'));
   }
 
-  console.log("");
+  console.log('');
   console.log(chalk.dim(`Config: ${getUserConfigPath()}`));
-  console.log("");
+  console.log('');
 }

@@ -24,17 +24,17 @@ export function resolveCatalogPath(catalogId: string, entry: CatalogEntry): stri
     return entry.path!;
   } else if (entry.type === 'git') {
     const cachePath = getCatalogCachePath(catalogId);
-    
+
     // Validate cache exists
     if (!fs.existsSync(cachePath)) {
       throw new Error(
-        `Git catalog cache not found for "${catalogId}". Run 'sync' first or check your internet connection.`
+        `Git catalog cache not found for "${catalogId}". Run 'sync' first or check your internet connection.`,
       );
     }
-    
+
     return cachePath;
   }
-  
+
   throw new Error(`Unknown catalog type: ${(entry as any).type}`);
 }
 
@@ -44,20 +44,20 @@ export function resolveCatalogPath(catalogId: string, entry: CatalogEntry): stri
  */
 export function checkSkillExists(
   skillName: string,
-  config: UserConfig
+  config: UserConfig,
 ): { type: 'catalog'; catalogId: string } | { type: 'custom' } | null {
   const skillPath = path.join(getOpenCodeSkillsPath(), skillName, 'SKILL.md');
-  
+
   if (!fs.existsSync(skillPath)) {
     return null;
   }
-  
+
   // Check if it's tracked in config
   const installedSkill = config.installed[skillName];
   if (installedSkill) {
     return { type: 'catalog', catalogId: installedSkill.catalog };
   }
-  
+
   // File exists but not tracked → custom skill
   return { type: 'custom' };
 }
@@ -72,11 +72,11 @@ export function installSkill(
   skillName: string,
   skill: DiscoveredSkill,
   targetDir: string,
-  force: boolean = false
+  _force: boolean = false,
 ): boolean {
   // Source path (in catalog)
   const sourcePath = skill.sourcePath;
-  
+
   // Validate source exists
   if (!fs.existsSync(sourcePath)) {
     throw new Error(`Skill file not found: ${sourcePath}`);
@@ -91,7 +91,7 @@ export function installSkill(
 
   // Copy file
   fs.copyFileSync(sourcePath, targetPath);
-  
+
   logger.debug(`Copied ${sourcePath} -> ${targetPath}`);
   return true;
 }

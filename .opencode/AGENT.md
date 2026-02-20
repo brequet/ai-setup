@@ -65,7 +65,7 @@ src/
   core/
     catalog.ts              # Parse catalog.json, hash tracking
     installer.ts            # File I/O for skills/MCP
-    config.ts               # ~/.bre-ai/config.json management
+    config.ts               # ~/.config/ai-setup/config.json management
     paths.ts                # OS path detection (Windows paths)
   ui/
     prompts.ts              # Inquirer.js workflows
@@ -95,7 +95,7 @@ src/
 
 ## Key Features
 
-1. **Multi-Catalog Registry**: `~/.bre-ai/config.json` with priority-based conflict resolution
+1. **Multi-Catalog Registry**: `~/.config/ai-setup/config.json` with priority-based conflict resolution
 2. **Offline Mode**: Cached in `%LOCALAPPDATA%\bre-ai-cache` with staleness warnings
 3. **Non-Destructive**: Only manages `bre-*` prefixed skills/MCP servers
 4. **Hash-Based Diffing**: Detects updates without comparing full content
@@ -106,7 +106,7 @@ src/
 
 ## Configuration
 
-### User Config: `~/.bre-ai/config.json`
+### User Config: `~/.config/ai-setup/config.json`
 
 ```json
 {
@@ -211,7 +211,7 @@ vitest@^1.0.0
 
 - Check `%USERPROFILE%\.config\opencode\skills` → `%APPDATA%\opencode` → `%LOCALAPPDATA%\opencode`
 - Cache: `%LOCALAPPDATA%\bre-ai-cache` (persistent, not cleaned)
-- Config: `%USERPROFILE%\.bre-ai\config.json`
+- Config: `%USERPROFILE%\.config\ai-setup\config.json`
 
 **Execution**: Direct Node.js (no shell wrappers).
 

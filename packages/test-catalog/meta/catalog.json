@@ -5,20 +5,19 @@
   "gitUrl": "https://gitlab.test/test-catalog.git",
   "opencodeVersion": ">=1.0.0",
   "skills": {
-    "backend-api": {
-      "hash": "sha256:8ed8ca21478795ca1f8a9fb5f17abaec65b8552085bdf7ce172c315d257bd245",
-      "path": "skills/backend-api/SKILL.md",
+    "frontend": {
+      "hash": "sha256:d2daa91fe7f30416929d3d0b6a2124d7502d57fc68d14ceade40fc4067f444ee",
+      "path": "skills/frontend/SKILL.md",
       "tags": [
-        "backend",
-        "api",
-        "rest",
-        "patterns"
+        "frontend",
+        "js",
+        "ts"
       ],
-      "description": "Backend API development patterns and best practices for RESTful services",
+      "description": "When doing frontend, use typescript.",
       "version": "1.0.0"
     },
     "refactor-monorepo": {
-      "hash": "sha256:563fd5e61e0aaa5dd84d0888cb043e83e7ba3ad67c19ca83a2516e26ea43c71a",
+      "hash": "sha256:5aa4f42f871b66918e0d2ec17eb8f9d6d2547cb345b604aecfc6b4ec91df09d4",
       "path": "skills/refactor-monorepo/SKILL.md",
       "tags": [
         "refactor",
@@ -37,6 +36,18 @@
         "writing"
       ],
       "description": "Documentation writing assistant",
+      "version": "1.0.0"
+    },
+    "backend-api": {
+      "hash": "sha256:148d445e7ffc765a939511b7fc104b75783f122e26cb8f52b635e9767aa4bb53",
+      "path": "skills/backend-api/SKILL.md",
+      "tags": [
+        "backend",
+        "api",
+        "rest",
+        "patterns"
+      ],
+      "description": "Backend API development patterns",
       "version": "1.0.0"
     }
   }

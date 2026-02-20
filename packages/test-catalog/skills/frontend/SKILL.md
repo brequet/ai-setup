@@ -1,10 +1,10 @@
 ---
-name: backend-api
-description: Backend API development patterns
+name: frontend
+description: When doing frontend, use typescript.
 license: MIT
 compatibility: opencode
 metadata:
-  tags: backend, api, rest, patterns
+  tags: frontend, js, ts
 ---
 
 ## What I do

@@ -9,7 +9,7 @@ metadata:
 
 ## What I do
 
-[Describe what this skill does]
+Help refactor TypeScript monorepos with best practices and patterns. OK ?
 
 ## When to use me
 

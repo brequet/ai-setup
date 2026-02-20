@@ -360,7 +360,7 @@ Team Lead (custom catalog):
 
 ## Multi-Catalog Strategy
 
-### Configuration File: `~/.bre-ai/config.json`
+### Configuration File: `~/.config/ai-setup/config.json`
 
 ```json
 {
@@ -602,7 +602,7 @@ Warning: "Conflict detected, using company version"
 
 **Deliverables**:
 
-- [ ] Implement `~/.bre-ai/config.json` for catalog registry
+- [ ] Implement `~/.config/ai-setup/config.json` for catalog registry
 - [ ] `add` command to register new catalogs
 - [ ] `list` command showing all catalogs + installed skills
 - [ ] Priority-based conflict resolution
@@ -699,7 +699,7 @@ Warning: "Conflict detected, using company version"
 ### Usage
 
 - **Target**: Average 5+ skills installed per dev
-- **Measure**: Track via `~/.bre-ai/config.json` (aggregate anonymously)
+- **Measure**: Track via `~/.config/ai-setup/config.json` (aggregate anonymously)
 
 ### Velocity
 

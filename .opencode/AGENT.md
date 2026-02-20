@@ -1,4 +1,4 @@
-# @bre/ai-setup CLI Tool
+# @brequet/ai-setup CLI Tool
 
 **Purpose**: Distribute OpenCode skills, MCP configs, and Copilot agents across team via npx CLI with multi-catalog support.
 
@@ -40,12 +40,12 @@
 
 ```bash
 # Interactive
-npx @bre/ai-setup init
-npx @bre/ai-setup skills
+npx @brequet/ai-setup init
+npx @brequet/ai-setup skills
 
 # Non-interactive (CI/CD)
-npx @bre/ai-setup skills --all --yes
-npx @bre/ai-setup mcp --user --silent
+npx @brequet/ai-setup skills --all --yes
+npx @brequet/ai-setup mcp --user --silent
 ```
 
 ---
@@ -191,7 +191,7 @@ vitest@^1.0.0
 
 ```json
 {
-  "name": "@bre/ai-setup",
+  "name": "@brequet/ai-setup",
   "version": "0.1.0",
   "bin": {
     "bre-ai-setup": "dist/cli.js"
@@ -223,7 +223,7 @@ vitest@^1.0.0
 
 - [ ] CLI scaffolds with Commander.js + Inquirer.js
 - [ ] `init` interactive flow works
-- [ ] Runs via `npx @bre/ai-setup@0.1.0 --version`
+- [ ] Runs via `npx @brequet/ai-setup@0.1.0 --version`
 
 **Phase 2 (Core)**:
 

@@ -5,6 +5,18 @@
   "gitUrl": "https://gitlab.test/test-catalog.git",
   "opencodeVersion": ">=1.0.0",
   "skills": {
+    "backend-api": {
+      "hash": "sha256:148d445e7ffc765a939511b7fc104b75783f122e26cb8f52b635e9767aa4bb53",
+      "path": "skills/backend-api/SKILL.md",
+      "tags": [
+        "backend",
+        "api",
+        "rest",
+        "patterns"
+      ],
+      "description": "Backend API development patterns",
+      "version": "1.0.0"
+    },
     "frontend": {
       "hash": "sha256:d2daa91fe7f30416929d3d0b6a2124d7502d57fc68d14ceade40fc4067f444ee",
       "path": "skills/frontend/SKILL.md",
@@ -17,7 +29,7 @@
       "version": "1.0.0"
     },
     "refactor-monorepo": {
-      "hash": "sha256:5aa4f42f871b66918e0d2ec17eb8f9d6d2547cb345b604aecfc6b4ec91df09d4",
+      "hash": "sha256:4bb8735e56b784d66a23543b761ec7261c9ebec64f3d6bc2f3e2b9554ac520c5",
       "path": "skills/refactor-monorepo/SKILL.md",
       "tags": [
         "refactor",
@@ -36,18 +48,6 @@
         "writing"
       ],
       "description": "Documentation writing assistant",
-      "version": "1.0.0"
-    },
-    "backend-api": {
-      "hash": "sha256:148d445e7ffc765a939511b7fc104b75783f122e26cb8f52b635e9767aa4bb53",
-      "path": "skills/backend-api/SKILL.md",
-      "tags": [
-        "backend",
-        "api",
-        "rest",
-        "patterns"
-      ],
-      "description": "Backend API development patterns",
       "version": "1.0.0"
     }
   }

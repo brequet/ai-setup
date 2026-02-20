@@ -77,6 +77,22 @@ export function getOpenCodeSkillsPath(): string {
 }
 
 /**
+ * Get the catalog cache directory path
+ * Uses: ~/.config/ai-setup/.cache/
+ */
+export function getCatalogCacheDir(): string {
+  return path.join(getConfigDir(), ".cache");
+}
+
+/**
+ * Get the cache path for a specific catalog
+ * Uses: ~/.config/ai-setup/.cache/<catalogId>/
+ */
+export function getCatalogCachePath(catalogId: string): string {
+  return path.join(getCatalogCacheDir(), catalogId);
+}
+
+/**
  * Ensure a directory exists, creating it if necessary
  */
 export function ensureDir(dirPath: string): void {

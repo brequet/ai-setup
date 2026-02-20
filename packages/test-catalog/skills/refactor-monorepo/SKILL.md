@@ -9,7 +9,7 @@ metadata:
 
 ## What I do
 
-Help refactor TypeScript monorepos with best practices and patterns. OK ?
+Help refactor TypeScript monorepos with best practices and patterns. update.
 
 ## When to use me
 

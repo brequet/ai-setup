@@ -6,10 +6,13 @@ import { logger } from '../utils/logger.js';
  * User configuration schema
  */
 export interface CatalogEntry {
-  type: 'local';  // 'git' support can be added later
-  path: string;   // absolute path to catalog directory
+  type: 'local' | 'git';
+  path?: string;      // For local catalogs only
+  url?: string;       // For git catalogs only
+  branch?: string;    // Git branch (default: 'main')
   priority: number;
   active: boolean;
+  lastSynced?: string; // ISO timestamp for git catalogs
 }
 
 export interface InstalledSkill {

@@ -162,7 +162,7 @@ cd packages/cli
 pnpm publish --access public
 
 # Users will then use:
-npx @bre/ai-setup@latest catalog new
+npx @brequet/ai-setup@latest catalog new
 ```
 
 ## Troubleshooting
@@ -180,7 +180,7 @@ pnpm build
 
 ```bash
 # Unlink and relink
-pnpm unlink --global @bre/ai-setup
+pnpm unlink --global @brequet/ai-setup
 cd packages/cli
 pnpm link --global
 ```

@@ -4,8 +4,8 @@
   "private": true,
   "description": "BRE AI Agents Catalog and CLI tooling",
   "scripts": {
-    "build": "pnpm --filter @bre/ai-setup build",
-    "dev": "pnpm --filter @bre/ai-setup dev",
+    "build": "pnpm --filter @brequet/ai-setup build",
+    "dev": "pnpm --filter @brequet/ai-setup dev",
     "test:catalog": "cd packages/cli && node dist/cli.js --dev-catalog ../test-catalog"
   },
   "keywords": [],

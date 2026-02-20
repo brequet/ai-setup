@@ -1,7 +1,31 @@
 import type { UserConfig, CatalogEntry, InstalledSkill } from './config.js';
 import type { Catalog, Skill } from './schema.js';
-import { loadCatalog, buildFullSkillName } from './installer.js';
+import { loadCatalog, buildFullSkillName, resolveCatalogPath } from './installer.js';
 import { logger } from '../utils/logger.js';
+import { getOpenCodeSkillsPath } from '../utils/paths.js';
+import { computeFileHash } from '../utils/hash.js';
+import fs from 'node:fs';
+import path from 'node:path';
+
+/**
+ * Compute hash of an actually installed skill file
+ * Returns null if file doesn't exist
+ */
+function computeActualFileHash(fullSkillName: string): string | null {
+  const skillsDir = getOpenCodeSkillsPath();
+  const skillPath = path.join(skillsDir, fullSkillName, 'SKILL.md');
+  
+  if (!fs.existsSync(skillPath)) {
+    return null;
+  }
+  
+  try {
+    return computeFileHash(skillPath);
+  } catch (error) {
+    logger.debug(`Failed to compute hash for ${fullSkillName}: ${(error as Error).message}`);
+    return null;
+  }
+}
 
 /**
  * A skill available in a catalog
@@ -45,7 +69,7 @@ export function compareWithCatalog(
   // Build map of available skills from all catalogs
   for (const { id: catalogId, entry } of catalogs) {
     try {
-      const catalog = loadCatalog(entry.path);
+      const catalog = loadCatalog(catalogId, entry);
 
       if (!catalog.skills || Object.keys(catalog.skills).length === 0) {
         logger.debug(`No skills in catalog: ${catalogId}`);
@@ -72,11 +96,35 @@ export function compareWithCatalog(
           // Skill is installed, mark as seen
           seenInstalledSkills.add(fullName);
 
-          // Check if hash differs
-          if (installedSkill.hash !== skill.hash) {
+          // Check if hash differs by comparing actual files
+          const actualFileHash = computeActualFileHash(fullName);
+          const fileMissing = actualFileHash === null;
+          
+          if (fileMissing) {
             result.updated.push(availableSkill);
           } else {
-            result.unchanged.push(availableSkill);
+            // Compute hash of the source file in the catalog
+            const catalogPath = resolveCatalogPath(catalogId, entry);
+            const sourcePath = path.join(catalogPath, skill.path);
+            
+            let catalogSourceHash: string | null = null;
+            try {
+              if (fs.existsSync(sourcePath)) {
+                catalogSourceHash = computeFileHash(sourcePath);
+              }
+            } catch (error) {
+              logger.debug(`Failed to compute catalog source hash for ${fullName}: ${(error as Error).message}`);
+            }
+            
+            // Compare actual installed file hash with catalog source file hash
+            // If they differ, the catalog has been updated or user modified the file
+            const needsUpdate = catalogSourceHash !== null && actualFileHash !== catalogSourceHash;
+            
+            if (needsUpdate) {
+              result.updated.push(availableSkill);
+            } else {
+              result.unchanged.push(availableSkill);
+            }
           }
         }
       }

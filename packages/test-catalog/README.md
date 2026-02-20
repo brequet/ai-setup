@@ -16,11 +16,11 @@ meta/
 
 ```bash
 # Add a skill
-npx @bre/ai-setup catalog skill add my-skill
+npx @brequet/ai-setup catalog skill add my-skill
 
 # Validate catalog
-npx @bre/ai-setup catalog validate
+npx @brequet/ai-setup catalog validate
 
 # Build catalog
-npx @bre/ai-setup catalog build
+npx @brequet/ai-setup catalog build
 ```

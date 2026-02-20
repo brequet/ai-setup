@@ -9,6 +9,7 @@ import { catalogBuild } from './commands/catalog/build.js';
 import { add } from './commands/add.js';
 import { skills } from './commands/skills.js';
 import { list } from './commands/list.js';
+import { sync } from './commands/sync.js';
 
 const program = new Command();
 
@@ -83,10 +84,13 @@ catalog
 // Consumer commands
 program
   .command('add <catalog-path>')
-  .description('Add a local catalog to your configuration')
+  .description('Add a local catalog or Git repository to your configuration')
   .option('--name <name>', 'Override catalog name (for display)')
   .option('--priority <number>', 'Set priority (default: auto-increment)', parseInt)
   .option('--inactive', 'Add catalog but mark as inactive')
+  .option('--branch <branch>', 'Git branch to use (default: main, only for Git URLs)')
+  .option('-y, --yes', 'Auto-install all skills without prompt')
+  .option('--no-install', 'Skip skill installation (just add catalog)')
   .action(async (catalogPath, options) => {
     await add(catalogPath, options);
   });
@@ -96,6 +100,14 @@ program
   .description('List registered catalogs and installed skills')
   .action(async () => {
     await list();
+  });
+
+program
+  .command('sync')
+  .description('Update Git-based catalogs')
+  .option('--catalog <id>', 'Sync specific catalog only')
+  .action(async (options) => {
+    await sync(options);
   });
 
 program

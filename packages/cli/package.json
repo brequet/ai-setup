@@ -1,5 +1,5 @@
 {
-  "name": "@bre/ai-setup",
+  "name": "@brequet/ai-setup",
   "version": "0.1.0",
   "description": "CLI tool for managing AI agent catalogs, skills, and MCP configurations",
   "type": "module",

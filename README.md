@@ -1,4 +1,4 @@
-# @bre/ai-setup
+# @brequet/ai-setup
 
 TUI TypeScript CLI tool for managing AI agent catalogs, OpenCode skills, and MCP configurations.
 
@@ -7,7 +7,7 @@ TUI TypeScript CLI tool for managing AI agent catalogs, OpenCode skills, and MCP
 ```
 ai-setup-poc/
 ├── packages/
-│   ├── cli/                    # @bre/ai-setup CLI package
+│   ├── cli/                    # @brequet/ai-setup CLI package
 │   │   ├── src/
 │   │   │   ├── cli.ts         # Entry point
 │   │   │   ├── commands/      # Command implementations
@@ -124,8 +124,8 @@ bre-ai-setup catalog new
 ### As npx Package (After Publish)
 
 ```bash
-npx @bre/ai-setup@latest catalog new
-npx @bre/ai-setup@latest catalog skill add my-skill
+npx @brequet/ai-setup@latest catalog new
+npx @brequet/ai-setup@latest catalog skill add my-skill
 ```
 
 ## Architecture Decisions

@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { logger } from '../utils/logger.js';
-import { getOpenCodeSkillsPath, ensureDir } from '../utils/paths.js';
+import { getOpenCodeSkillsPath, ensureDir, getCatalogCachePath } from '../utils/paths.js';
 import { computeFileHash } from '../utils/hash.js';
 import type { Catalog, Skill } from './schema.js';
 import type { UserConfig, CatalogEntry, InstalledSkill } from './config.js';
@@ -28,9 +28,34 @@ export interface SkillWithContext {
 }
 
 /**
- * Load a catalog from a local path
+ * Resolve catalog path based on entry type
+ * - Local catalogs: use path directly
+ * - Git catalogs: use cache path
  */
-export function loadCatalog(catalogPath: string): Catalog {
+export function resolveCatalogPath(catalogId: string, entry: CatalogEntry): string {
+  if (entry.type === 'local') {
+    return entry.path!;
+  } else if (entry.type === 'git') {
+    const cachePath = getCatalogCachePath(catalogId);
+    
+    // Validate cache exists
+    if (!fs.existsSync(cachePath)) {
+      throw new Error(
+        `Git catalog cache not found for "${catalogId}". Run 'sync' first or check your internet connection.`
+      );
+    }
+    
+    return cachePath;
+  }
+  
+  throw new Error(`Unknown catalog type: ${(entry as any).type}`);
+}
+
+/**
+ * Load a catalog from a catalog entry
+ */
+export function loadCatalog(catalogId: string, entry: CatalogEntry): Catalog {
+  const catalogPath = resolveCatalogPath(catalogId, entry);
   const catalogJsonPath = path.join(catalogPath, 'meta', 'catalog.json');
   
   if (!fs.existsSync(catalogJsonPath)) {
@@ -92,8 +117,11 @@ export function installSkill(
   const { catalogId, catalogEntry, skillName, skill } = skillWithContext;
   const fullName = buildFullSkillName(catalogId, skillName);
   
+  // Resolve catalog path (handles both local and git catalogs)
+  const catalogPath = resolveCatalogPath(catalogId, catalogEntry);
+  
   // Source path (in catalog)
-  const sourcePath = path.join(catalogEntry.path, skill.path);
+  const sourcePath = path.join(catalogPath, skill.path);
   
   // Validate source exists
   if (!fs.existsSync(sourcePath)) {
@@ -137,7 +165,7 @@ export async function installSkills(
 
   for (const { id: catalogId, entry } of catalogs) {
     try {
-      const catalog = loadCatalog(entry.path);
+      const catalog = loadCatalog(catalogId, entry);
       
       if (!catalog.skills || Object.keys(catalog.skills).length === 0) {
         logger.debug(`No skills in catalog: ${catalogId}`);

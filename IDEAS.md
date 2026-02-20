@@ -13,7 +13,7 @@
 ### Core Components
 
 ```
-@bre/ai-setup (npx CLI)
+@brequet/ai-setup (npx CLI)
     ↓ clones/pulls
 bre-ai-agents-catalog (GitLab)
     ↓ syncs to
@@ -90,7 +90,7 @@ tsconfig.json
 ```
 ai-setup-poc/
   packages/
-    cli/                              # @bre/ai-setup
+    cli/                              # @brequet/ai-setup
       src/
         commands/
           skills.ts                   # Consumer
@@ -142,26 +142,26 @@ node dist/cli.js --dev-catalog ../test-catalog catalog validate
 
 1. **Multi-team scenario**: Other teams create their own catalogs → need same tooling
 2. **Single source of truth**: Schema, validation, build logic centralized
-3. **Better DX**: One tool to learn (`npx @bre/ai-setup`)
+3. **Better DX**: One tool to learn (`npx @brequet/ai-setup`)
 4. **Natural discovery**: Devs see `catalog` commands, realize they can contribute
 
 ### Catalog Commands (Interactive)
 
 ```bash
-$ npx @bre/ai-setup catalog skill add
+$ npx @brequet/ai-setup catalog skill add
 ? Skill name: refactor-monorepo
 ? Description: TypeScript monorepo refactoring
 ? Tags: refactor,monorepo,typescript
 ✓ Generated skills/refactor-monorepo/SKILL.md (template)
 ✓ Updated meta/catalog.json
 
-$ npx @bre/ai-setup catalog validate
+$ npx @brequet/ai-setup catalog validate
 ✓ Schema valid
 ✓ All skill paths exist
 ✓ Hashes computed
 ✓ No duplicates
 
-$ npx @bre/ai-setup catalog build
+$ npx @brequet/ai-setup catalog build
 ✓ Generated meta/catalog.json
 ✓ Computed 3 skill hashes
 ✓ Catalog ready for commit
@@ -173,14 +173,14 @@ $ npx @bre/ai-setup catalog build
 
 ```bash
 # Prod: Uses GitLab catalogs (default)
-npx @bre/ai-setup skills --all
+npx @brequet/ai-setup skills --all
 
 # Dev: Points to local folder
-npx @bre/ai-setup --dev-catalog ./my-catalog skills --all
-npx @bre/ai-setup --dev-catalog ./my-catalog catalog skill add test
+npx @brequet/ai-setup --dev-catalog ./my-catalog skills --all
+npx @brequet/ai-setup --dev-catalog ./my-catalog catalog skill add test
 
 # Works for any local catalog (team, personal, etc.)
-npx @bre/ai-setup --dev-catalog ../bre-frontend-catalog catalog validate
+npx @brequet/ai-setup --dev-catalog ../bre-frontend-catalog catalog validate
 ```
 
 **Use cases**:
@@ -211,9 +211,9 @@ npx @bre/ai-setup --dev-catalog ../bre-frontend-catalog catalog validate
     }
   },
   "mcpServers": {
-    "@bre-gitlab": {
+    "@brequet-gitlab": {
       "type": "nodePackage",
-      "package": "@bre/mcp-gitlab",
+      "package": "@brequet/mcp-gitlab",
       "args": [],
       "env": {
         "GITLAB_URL": "https://gitlab.bre.local"
@@ -237,28 +237,28 @@ npx @bre/ai-setup --dev-catalog ../bre-frontend-catalog catalog validate
 
 ```bash
 # First-time setup (interactive)
-npx @bre/ai-setup@latest init
+npx @brequet/ai-setup@latest init
 
 # List all catalogs and status
-npx @bre/ai-setup@latest list
+npx @brequet/ai-setup@latest list
 
 # Update catalog cache
-npx @bre/ai-setup@latest sync [--channel stable|beta]
+npx @brequet/ai-setup@latest sync [--channel stable|beta]
 
 # Install/update skills
-npx @bre/ai-setup@latest skills --all
-npx @bre/ai-setup@latest skills --select refactor-monorepo,write-docs
-npx @bre/ai-setup@latest skills --dry-run
+npx @brequet/ai-setup@latest skills --all
+npx @brequet/ai-setup@latest skills --select refactor-monorepo,write-docs
+npx @brequet/ai-setup@latest skills --dry-run
 
 # Configure MCP servers
-npx @bre/ai-setup@latest mcp --user
-npx @bre/ai-setup@latest mcp --workspace .
+npx @brequet/ai-setup@latest mcp --user
+npx @brequet/ai-setup@latest mcp --workspace .
 
 # Add new catalog registry
-npx @bre/ai-setup@latest add <git-url>
+npx @brequet/ai-setup@latest add <git-url>
 
 # Copilot template injection
-npx @bre/ai-setup@latest copilot --template backend
+npx @brequet/ai-setup@latest copilot --template backend
 ```
 
 ### Maintainer Commands (Catalog Management)
@@ -267,35 +267,35 @@ npx @bre/ai-setup@latest copilot --template backend
 
 ```bash
 # Initialize new catalog (interactive)
-npx @bre/ai-setup catalog new
+npx @brequet/ai-setup catalog new
 
 # Add skill to catalog (interactive prompts for metadata)
-npx @bre/ai-setup catalog skill add [name]
+npx @brequet/ai-setup catalog skill add [name]
 
 # Add MCP server config
-npx @bre/ai-setup catalog mcp add [name]
+npx @brequet/ai-setup catalog mcp add [name]
 
 # Validate catalog structure + metadata
-npx @bre/ai-setup catalog validate
+npx @brequet/ai-setup catalog validate
 
 # Build catalog.json from current state
-npx @bre/ai-setup catalog build
+npx @brequet/ai-setup catalog build
 
 # List catalog contents
-npx @bre/ai-setup catalog list
+npx @brequet/ai-setup catalog list
 ```
 
 **Dev Mode**: Target local catalog folder directly (for development + testing)
 
 ```bash
 # Point to local catalog during development
-npx @bre/ai-setup --dev-catalog ./packages/test-catalog skills --all
+npx @brequet/ai-setup --dev-catalog ./packages/test-catalog skills --all
 
 # Maintain local catalog
-npx @bre/ai-setup --dev-catalog ./my-team-catalog catalog skill add new-skill
+npx @brequet/ai-setup --dev-catalog ./my-team-catalog catalog skill add new-skill
 
 # Works with any catalog (local or remote)
-npx @bre/ai-setup --dev-catalog ../bre-frontend-catalog catalog validate
+npx @brequet/ai-setup --dev-catalog ../bre-frontend-catalog catalog validate
 ```
 
 **Multi-team support**: Other teams use same CLI for their catalogs
@@ -303,20 +303,20 @@ npx @bre/ai-setup --dev-catalog ../bre-frontend-catalog catalog validate
 ```bash
 # Team creates their own catalog
 cd bre-frontend-catalog
-npx @bre/ai-setup catalog new
-npx @bre/ai-setup catalog skill add react-patterns
-npx @bre/ai-setup catalog validate
+npx @brequet/ai-setup catalog new
+npx @brequet/ai-setup catalog skill add react-patterns
+npx @brequet/ai-setup catalog validate
 git add . && git commit && git push
 
 # Consumers add team catalog
-npx @bre/ai-setup add https://gitlab.bre/frontend/bre-frontend-catalog.git
-npx @bre/ai-setup skills
+npx @brequet/ai-setup add https://gitlab.bre/frontend/bre-frontend-catalog.git
+npx @brequet/ai-setup skills
 ```
 
 **Interactive UX**: All catalog commands prompt for required info
 
 ```bash
-$ npx @bre/ai-setup catalog skill add
+$ npx @brequet/ai-setup catalog skill add
 ? Skill name: refactor-monorepo
 ? Description: TypeScript monorepo refactoring patterns
 ? Tags (comma-separated): refactor,monorepo,typescript
@@ -328,30 +328,30 @@ $ npx @bre/ai-setup catalog skill add
 
 ```
 New Developer:
-  npx @bre/ai-setup init
+  npx @brequet/ai-setup init
     → "Add BRE company catalog? [Y/n]"
-    → Sets @bre:registry in ~/.npmrc
+    → Sets @brequet:registry in ~/.npmrc
     → Clones catalog to %LOCALAPPDATA%\bre-ai-cache\bre-company
 
-  npx @bre/ai-setup sync
+  npx @brequet/ai-setup sync
     → "3 new skills available"
 
-  npx @bre/ai-setup skills --all
+  npx @brequet/ai-setup skills --all
     → Installs to ~/.config/opencode/skills/bre-*
 
 Existing Developer (update):
-  npx @bre/ai-setup sync
+  npx @brequet/ai-setup sync
     → "2 skills outdated, 1 new. Update? [Y/n]"
     → Shows diff of changes
 
-  npx @bre/ai-setup skills --yes
+  npx @brequet/ai-setup skills --yes
     → Auto-update without prompts
 
 Team Lead (custom catalog):
-  npx @bre/ai-setup add https://gitlab.bre/frontend-team/ai-catalog.git
+  npx @brequet/ai-setup add https://gitlab.bre/frontend-team/ai-catalog.git
     → Added as "frontend-team" with priority 2
 
-  npx @bre/ai-setup skills
+  npx @brequet/ai-setup skills
     → Shows skills from both catalogs
     → Installs bre-* and bre-frontend-*
 ```
@@ -462,17 +462,17 @@ Warning: "Conflict detected, using company version"
 {
   "servers": {
     "user-custom-server": { ... },
-    "@bre-gitlab": {
+    "@brequet-gitlab": {
       "command": "npx",
-      "args": ["@bre/mcp-gitlab"],
+      "args": ["@brequet/mcp-gitlab"],
       "env": { "GITLAB_URL": "https://gitlab.bre.local" }
     },
-    "@bre-jira": { ... }
+    "@brequet-jira": { ... }
   }
 }
 ```
 
-**Conflict detection**: If user has server named `@bre-*`, prompt before overwriting.
+**Conflict detection**: If user has server named `@brequet-*`, prompt before overwriting.
 
 ### Copilot AGENTS.md
 
@@ -500,7 +500,7 @@ Warning: "Conflict detected, using company version"
 
 **Issue**: Artifactory npm registry requires auth tokens  
 **Impact**: Devs can't use `npx` without setup  
-**Mitigation**: Bootstrap PowerShell script that sets `@bre:registry` and handles token via env var or `npm login`
+**Mitigation**: Bootstrap PowerShell script that sets `@brequet:registry` and handles token via env var or `npm login`
 
 ### 2. Windows Path Edge Cases
 
@@ -518,7 +518,7 @@ Warning: "Conflict detected, using company version"
 
 **Issue**: User has custom server with same name  
 **Impact**: Silently overwriting user config  
-**Mitigation**: Namespace all BRE servers with `@bre-*` prefix, conflict prompt
+**Mitigation**: Namespace all BRE servers with `@brequet-*` prefix, conflict prompt
 
 ### 5. Multi-Catalog Priority Conflicts
 
@@ -570,9 +570,9 @@ Warning: "Conflict detected, using company version"
 - [ ] Create `bre-ai-setup` TypeScript project
 - [ ] Scaffold CLI with Commander.js
 - [ ] Configure Artifactory npm repository `npm-bre`
-- [ ] Test manual publish of `@bre/ai-setup@0.1.0`
+- [ ] Test manual publish of `@brequet/ai-setup@0.1.0`
 
-**Validation**: Can manually run `npx @bre/ai-setup@0.1.0 --version` after registry setup.
+**Validation**: Can manually run `npx @brequet/ai-setup@0.1.0 --version` after registry setup.
 
 ---
 
@@ -693,7 +693,7 @@ Warning: "Conflict detected, using company version"
 
 ### Adoption
 
-- **Target**: 80% of devs with `@bre/ai-setup` configured within 3 months
+- **Target**: 80% of devs with `@brequet/ai-setup` configured within 3 months
 - **Measure**: Artifactory download count, internal survey
 
 ### Usage

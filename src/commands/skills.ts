@@ -55,7 +55,7 @@ export async function skills(options: SkillsOptions = {}): Promise<void> {
 
   if (activeCatalogs.length === 0) {
     throw new CLIError(
-      'No catalogs registered. Add a catalog first: npx @brequet/ai-setup add <catalog-path>',
+      'No catalogs registered. Add a catalog first: npx @brequet/agent-sync add <catalog-path>',
     );
   }
 

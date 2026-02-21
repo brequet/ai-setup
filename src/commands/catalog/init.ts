@@ -53,7 +53,7 @@ Add new skills to the catalog:
 
 \`\`\`bash
 # Add a new skill
-npx @brequet/ai-setup catalog skill add my-skill
+npx @brequet/agent-sync catalog skill add my-skill
 
 # Or manually create a folder with SKILL.md
 mkdir -p skills/my-skill
@@ -93,10 +93,10 @@ Users can add this catalog:
 
 \`\`\`bash
 # Local catalog
-npx @brequet/ai-setup add /path/to/this/catalog
+npx @brequet/agent-sync add /path/to/this/catalog
 
 # Git catalog (once published)
-npx @brequet/ai-setup add https://github.com/your-org/your-catalog
+npx @brequet/agent-sync add https://github.com/your-org/your-catalog
 \`\`\`
 
 No build step needed - the CLI discovers skills by scanning the skills/ directory!
@@ -111,7 +111,7 @@ No build step needed - the CLI discovers skills by scanning the skills/ director
   logger.print('✨ Catalog initialized successfully!');
   logger.blank();
   logger.info(`Next steps:`);
-  logger.info(`  1. Add skills: npx @brequet/ai-setup catalog skill add <name>`);
+  logger.info(`  1. Add skills: npx @brequet/agent-sync catalog skill add <name>`);
   logger.info(`  2. Edit SKILL.md files with your skill instructions`);
   logger.info(`  3. Share your catalog via Git or local path`);
   logger.blank();

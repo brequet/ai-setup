@@ -1,12 +1,12 @@
 {
-  "name": "@brequet/ai-setup",
+  "name": "@brequet/agent-sync",
   "version": "0.1.0",
   "description": "CLI tool for managing AI agent catalogs, skills, and MCP configurations",
   "license": "MIT",
-  "repository": "https://github.com/brequet/ai-setup",
+  "repository": "https://github.com/brequet/agent-sync",
   "type": "module",
   "bin": {
-    "ai-setup": "./dist/cli.js"
+    "agent-sync": "./dist/cli.js"
   },
   "scripts": {
     "dev": "tsx watch src/cli.ts",

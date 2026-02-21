@@ -1,8 +1,8 @@
-# @brequet/ai-setup CLI Tool
+# @brequet/agent-sync CLI Tool
 
 ## Project Vision
 
-`@brequet/ai-setup` is a high-performance, ESM-first TypeScript CLI for managing AI agent catalogs and MCP (Model Context Protocol) configurations. We prioritize **type safety**, **minimalist DX**, and **idempotency**.
+`@brequet/agent-sync` is a high-performance, ESM-first TypeScript CLI for managing AI agent catalogs and MCP (Model Context Protocol) configurations. We prioritize **type safety**, **minimalist DX**, and **idempotency**.
 
 ## Core Principles & TypeScript Standards
 

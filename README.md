@@ -1,13 +1,13 @@
-# @brequet/ai-setup
+# @brequet/agent-sync
 
 TUI TypeScript CLI tool for managing AI agent catalogs, OpenCode skills, and MCP configurations.
 
 ## Project Structure
 
 ```
-ai-setup-poc/
+agent-sync-poc/
 ├── packages/
-│   ├── cli/                    # @brequet/ai-setup CLI package
+│   ├── cli/                    # @brequet/agent-sync CLI package
 │   │   ├── src/
 │   │   │   ├── cli.ts         # Entry point
 │   │   │   ├── commands/      # Command implementations
@@ -82,26 +82,26 @@ node ../cli/dist/cli.js catalog validate
 
 ```bash
 # Create new catalog
-ai-setup catalog new
-ai-setup catalog new --name "My Catalog" --id "my-catalog"
+agent-sync catalog new
+agent-sync catalog new --name "My Catalog" --id "my-catalog"
 
 # Add skill (OpenCode spec-compliant)
-ai-setup catalog skill add
-ai-setup catalog skill add git-release \
+agent-sync catalog skill add
+agent-sync catalog skill add git-release \
   --description "Create consistent releases and changelogs" \
   --tags "git,release,changelog" \
   --license "MIT"
 
 # Name normalization examples
-ai-setup catalog skill add "My Cool Skill"    # → my-cool-skill
-ai-setup catalog skill add "PR Review!!!"     # → pr-review
+agent-sync catalog skill add "My Cool Skill"    # → my-cool-skill
+agent-sync catalog skill add "PR Review!!!"     # → pr-review
 
 # Validate catalog (checks frontmatter, names, hashes)
-ai-setup catalog validate
-ai-setup catalog validate --verbose
+agent-sync catalog validate
+agent-sync catalog validate --verbose
 
 # Build catalog (regenerate hashes)
-ai-setup catalog build
+agent-sync catalog build
 ```
 
 #### Global Flags
@@ -117,14 +117,14 @@ ai-setup catalog build
 ```bash
 cd packages/cli
 pnpm link --global
-ai-setup catalog new
+agent-sync catalog new
 ```
 
 ### As npx Package (After Publish)
 
 ```bash
-npx @brequet/ai-setup@latest catalog new
-npx @brequet/ai-setup@latest catalog skill add my-skill
+npx @brequet/agent-sync@latest catalog new
+npx @brequet/agent-sync@latest catalog skill add my-skill
 ```
 
 ## Architecture Decisions

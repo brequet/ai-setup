@@ -21,7 +21,7 @@ export async function list() {
   if (catalogEntries.length === 0) {
     logger.print(chalk.yellow('No catalogs registered'));
     logger.blank();
-    logger.info('Add a catalog: npx @brequet/ai-setup add <catalog-path>');
+    logger.info('Add a catalog: npx @brequet/agent-sync add <catalog-path>');
     return;
   }
 
@@ -96,7 +96,7 @@ export async function list() {
   if (installedEntries.length === 0) {
     logger.print(chalk.yellow('No skills installed'));
     logger.blank();
-    logger.info('Install skills: npx @brequet/ai-setup skills');
+    logger.info('Install skills: npx @brequet/agent-sync skills');
   } else {
     const byCatalog = new Map<string, Array<[string, (typeof config.installed)[string]]>>();
 

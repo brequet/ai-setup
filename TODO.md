@@ -1,6 +1,7 @@
 TODO:
 
-- rework readme, its total bs right now
+- rename to agent-setup ?
+- rework readme, its total bs right now -> dont forget, its supposed to work with opencode
 - [ ] What about AGENTS.md ; could i like define in a catalog a part to be inject in AGENTS.MD, and then my cli tool does clean injection in the user AGENTS.MD file ? (how to track part ? marker in md ?)
 - [ ] how to handles MCP config ? some mcp needs to do some auth, some to have api keys ready etc.. How to handle genericly install of mcp then ? scripting ? Merge of json ?
 - [ ] how to handle agents/sub-agents conf too ? since its need to tweak opencode config json file, need to resolve (its jsonc with comment, we can put markers,dates etc in the json file)
@@ -9,7 +10,7 @@ TODO:
 - [ ] make it so sync command propose to the user to install updates if any
 - [ ] pre commit hook: fmt + lint + test
 - see if catalog priority is used, useful or not
--
+- cmd "remove" to remove a catalog, skill or mcp from config and disk ?
 
 ## Issues
 
@@ -20,6 +21,8 @@ In src/commands/list.ts, you scan the skillsDir and identify "Other skills" that
 The Issue: Your CLI currently manages files but doesn't fully "own" them. If a user deletes a folder manually, your config.installed becomes out of sync.
 
 The Fix: You should implement a "reconcile" or "repair" function. Before running sync or list, the CLI should verify that every entry in config.installed actually exists on disk. If not, mark it as "broken" or auto-remove it from the config.
+
+-> Maybe if removed while in "installed" state, mark them as "missing", so we assume its the user that removed it, so we can force reinstall them ONLY AND ONLY IF -f or --force flag is used ? Else we must assume the user had good reasons to remove it.
 
 ### Shell Command Insecurity
 

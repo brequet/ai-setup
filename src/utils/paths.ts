@@ -25,7 +25,7 @@ export function getHomeDir(): string {
 
 export function getConfigDir(): string {
   if (testOverrides?.configDir) return testOverrides.configDir;
-  return path.join(getHomeDir(), '.config', 'ai-setup');
+  return path.join(getHomeDir(), '.config', 'agent-sync');
 }
 
 export function getConfigPath(): string {

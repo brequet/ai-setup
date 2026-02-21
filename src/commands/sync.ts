@@ -25,7 +25,7 @@ export async function sync(options: SyncOptions = {}) {
   if (gitCatalogs.length === 0) {
     logger.info('No Git catalogs to sync');
     logger.blank();
-    logger.info('Add a Git catalog: npx @brequet/ai-setup add <git-url>');
+    logger.info('Add a Git catalog: npx @brequet/agent-sync add <git-url>');
     return;
   }
 
@@ -77,8 +77,8 @@ export async function sync(options: SyncOptions = {}) {
 
   if (successCount > 0) {
     logger.info('Next steps:');
-    logger.info('  - List catalogs:    npx @brequet/ai-setup list');
-    logger.info('  - Install skills:   npx @brequet/ai-setup skills');
+    logger.info('  - List catalogs:    npx @brequet/agent-sync list');
+    logger.info('  - Install skills:   npx @brequet/agent-sync skills');
   }
 
   logger.blank();

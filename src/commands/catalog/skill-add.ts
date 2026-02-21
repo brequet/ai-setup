@@ -47,7 +47,7 @@ export async function catalogSkillAdd(name?: string, options: SkillAddOptions = 
   const skillsDir = path.join(catalogPath, 'skills');
 
   if (!existsSync(skillsDir)) {
-    throw new ValidationError('No catalog found. Run "ai-setup catalog init" first.');
+    throw new ValidationError('No catalog found. Run "npx @brequet/ai-setup catalog init" first.');
   }
 
   const rawName =

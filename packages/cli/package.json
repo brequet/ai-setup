@@ -4,7 +4,7 @@
   "description": "CLI tool for managing AI agent catalogs, skills, and MCP configurations",
   "type": "module",
   "bin": {
-    "bre-ai-setup": "./dist/cli.js"
+    "ai-setup": "./dist/cli.js"
   },
   "scripts": {
     "dev": "tsx watch src/cli.ts",

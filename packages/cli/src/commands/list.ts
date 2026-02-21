@@ -167,12 +167,12 @@ export async function list() {
         logger.print(
           chalk.bold(`  Other skills`) +
             chalk.dim(
-              ` (${otherSkills.length} custom skill${otherSkills.length === 1 ? '' : 's'})`,
+              ` - not from any catalog (${otherSkills.length} custom skill${otherSkills.length === 1 ? '' : 's'})`,
             ),
         );
 
         for (const skillName of otherSkills) {
-          logger.print(`    ${chalk.dim('○')} ${skillName} ${chalk.dim('(not from any catalog)')}`);
+          logger.print(`    ${chalk.dim('○')} ${skillName}`);
         }
       }
     }

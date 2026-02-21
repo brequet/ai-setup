@@ -27,8 +27,8 @@ cd packages/cli
 pnpm link --global
 
 # Now use anywhere
-bre-ai-setup --help
-bre-ai-setup catalog new
+ai-setup --help
+ai-setup catalog new
 ```
 
 ### Option 3: Root Scripts
@@ -49,7 +49,7 @@ pnpm test:catalog catalog validate --verbose
 # Create catalog
 mkdir my-catalog
 cd my-catalog
-bre-ai-setup catalog new \
+ai-setup catalog new \
   --name "My Team Catalog" \
   --id "my-team" \
   --git-url "https://gitlab.example.com/my-team/catalog.git"
@@ -63,22 +63,22 @@ ls -la
 
 ```bash
 # Interactive (prompts for all fields)
-bre-ai-setup catalog skill add
+ai-setup catalog skill add
 
 # With arguments (OpenCode spec-compliant)
-bre-ai-setup catalog skill add git-release \
+ai-setup catalog skill add git-release \
   --description "Create consistent releases and changelogs" \
   --tags "git,release,changelog" \
   --license "MIT"
 
 # Auto-kebab-case conversion
-bre-ai-setup catalog skill add "My Cool Skill"
+ai-setup catalog skill add "My Cool Skill"
 # Creates: skills/my-cool-skill/SKILL.md
 # Frontmatter name: my-cool-skill
 
 # More examples
-bre-ai-setup catalog skill add "PR Review!!!"  # → pr-review
-bre-ai-setup catalog skill add "Git Release"   # → git-release
+ai-setup catalog skill add "PR Review!!!"  # → pr-review
+ai-setup catalog skill add "Git Release"   # → git-release
 ```
 
 **Generated SKILL.md format:**
@@ -103,10 +103,10 @@ metadata:
 
 ```bash
 # Basic validation
-bre-ai-setup catalog validate
+ai-setup catalog validate
 
 # Verbose (debug mode)
-bre-ai-setup catalog validate --verbose
+ai-setup catalog validate --verbose
 
 # Shows:
 # ✔ Schema valid
@@ -120,10 +120,10 @@ bre-ai-setup catalog validate --verbose
 
 ```bash
 # Regenerate catalog.json from current skills
-bre-ai-setup catalog build
+ai-setup catalog build
 
 # With verbose logging
-bre-ai-setup catalog build --verbose
+ai-setup catalog build --verbose
 ```
 
 ## Testing with Test Catalog
@@ -154,8 +154,8 @@ pnpm link --global
 
 # Use from any directory
 cd ~/my-catalog
-bre-ai-setup catalog new
-bre-ai-setup catalog skill add my-skill
+ai-setup catalog new
+ai-setup catalog skill add my-skill
 ```
 
 ## Publishing (Future)
@@ -193,6 +193,6 @@ pnpm link --global
 Add `--verbose` to any command:
 
 ```bash
-bre-ai-setup --verbose catalog validate
-bre-ai-setup --verbose catalog build
+ai-setup --verbose catalog validate
+ai-setup --verbose catalog build
 ```

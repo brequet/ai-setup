@@ -48,7 +48,7 @@ scripts/
 README.md
 ```
 
-#### `bre-ai-setup` (npm package on Artifactory)
+#### `ai-setup` (npm package on Artifactory)
 
 ```
 src/
@@ -536,7 +536,7 @@ Warning: "Conflict detected, using company version"
 - [ ] Create `bre-ai-agents-catalog` repo on GitLab
 - [ ] Define directory structure and `catalog.json` schema
 - [ ] Add 2-3 sample skills for testing
-- [ ] Create `bre-ai-setup` TypeScript project
+- [ ] Create `ai-setup` TypeScript project
 - [ ] Scaffold CLI with Commander.js
 - [ ] Configure Artifactory npm repository `npm-bre`
 - [ ] Test manual publish of `@brequet/ai-setup@0.1.0`

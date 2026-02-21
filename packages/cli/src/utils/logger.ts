@@ -14,23 +14,23 @@ export const logger = {
   },
 
   success(message: string) {
-    console.log(chalk.green('✔'), message);
+    console.log(chalk.green('✔ '), message);
   },
 
   error(message: string, error?: Error) {
-    console.error(chalk.red('✖'), message);
+    console.error(chalk.red('✖ '), message);
     if (verbose && error?.stack) {
       console.error(chalk.gray(error.stack));
     }
   },
 
   warn(message: string) {
-    console.warn(chalk.yellow('⚠'), message);
+    console.warn(chalk.yellow('⚠️ '), message);
   },
 
   debug(message: string) {
     if (verbose) {
-      console.log(chalk.gray('[DEBUG]'), message);
+      console.log(chalk.gray('[DEBUG] '), message);
     }
   },
 

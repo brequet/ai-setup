@@ -82,26 +82,26 @@ node ../cli/dist/cli.js catalog validate
 
 ```bash
 # Create new catalog
-bre-ai-setup catalog new
-bre-ai-setup catalog new --name "My Catalog" --id "my-catalog"
+ai-setup catalog new
+ai-setup catalog new --name "My Catalog" --id "my-catalog"
 
 # Add skill (OpenCode spec-compliant)
-bre-ai-setup catalog skill add
-bre-ai-setup catalog skill add git-release \
+ai-setup catalog skill add
+ai-setup catalog skill add git-release \
   --description "Create consistent releases and changelogs" \
   --tags "git,release,changelog" \
   --license "MIT"
 
 # Name normalization examples
-bre-ai-setup catalog skill add "My Cool Skill"    # → my-cool-skill
-bre-ai-setup catalog skill add "PR Review!!!"     # → pr-review
+ai-setup catalog skill add "My Cool Skill"    # → my-cool-skill
+ai-setup catalog skill add "PR Review!!!"     # → pr-review
 
 # Validate catalog (checks frontmatter, names, hashes)
-bre-ai-setup catalog validate
-bre-ai-setup catalog validate --verbose
+ai-setup catalog validate
+ai-setup catalog validate --verbose
 
 # Build catalog (regenerate hashes)
-bre-ai-setup catalog build
+ai-setup catalog build
 ```
 
 #### Global Flags
@@ -117,7 +117,7 @@ bre-ai-setup catalog build
 ```bash
 cd packages/cli
 pnpm link --global
-bre-ai-setup catalog new
+ai-setup catalog new
 ```
 
 ### As npx Package (After Publish)

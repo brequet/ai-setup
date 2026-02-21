@@ -42,7 +42,7 @@ function wrapAction<T extends any[]>(
 const program = new Command();
 
 program
-  .name('bre-ai-setup')
+  .name('ai-setup')
   .description('CLI tool for managing AI agent catalogs, skills, and MCP configurations')
   .version('0.1.0')
   .option('--verbose', 'Enable verbose logging')

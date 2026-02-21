@@ -75,7 +75,7 @@ skills/
 
 ```bash
 # Command
-bre-ai-setup catalog skill add git-release \
+ai-setup catalog skill add git-release \
   --description "Create consistent releases and changelogs" \
   --tags "git,release,changelog"
 
@@ -117,7 +117,7 @@ metadata:
 ### Validation Output
 
 ```bash
-$ bre-ai-setup catalog validate --verbose
+$ ai-setup catalog validate --verbose
 
 Validating catalog...
 
@@ -160,19 +160,19 @@ Test the implementation:
 
 ```bash
 # Create catalog
-bre-ai-setup catalog new --name "Test" --id "test"
+ai-setup catalog new --name "Test" --id "test"
 
 # Add valid skill
-bre-ai-setup catalog skill add git-release \
+ai-setup catalog skill add git-release \
   --description "Release management" \
   --tags "git,release"
 
 # Add skill with auto-normalization
-bre-ai-setup catalog skill add "My Cool Skill" \
+ai-setup catalog skill add "My Cool Skill" \
   --description "Test skill"
 
 # Validate (should pass)
-bre-ai-setup catalog validate --verbose
+ai-setup catalog validate --verbose
 ```
 
 ## References

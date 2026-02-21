@@ -194,7 +194,7 @@ vitest@^1.0.0
   "name": "@brequet/ai-setup",
   "version": "0.1.0",
   "bin": {
-    "bre-ai-setup": "dist/cli.js"
+    "ai-setup": "dist/cli.js"
   },
   "type": "module",
   "exports": "./dist/cli.js"

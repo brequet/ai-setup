@@ -71,9 +71,9 @@ pnpm build
 cd packages/cli
 pnpm dev
 
-# Terminal 2: Test commands
-cd packages/cli
-node dist/cli.js --dev-catalog ../test-catalog catalog validate
+# Terminal 2: Test commands (navigate to catalog first)
+cd packages/test-catalog
+node ../cli/dist/cli.js catalog validate
 ```
 
 ### Commands
@@ -108,7 +108,6 @@ bre-ai-setup catalog build
 
 ```bash
 --verbose              # Enable debug logging
---dev-catalog <path>   # Point to local catalog directory
 ```
 
 ## Usage

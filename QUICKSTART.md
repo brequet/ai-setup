@@ -129,15 +129,18 @@ bre-ai-setup catalog build --verbose
 ## Testing with Test Catalog
 
 ```bash
-# From anywhere in the project
-cd packages/cli
-node dist/cli.js --dev-catalog ../test-catalog catalog validate
+# Navigate to test catalog
+cd packages/test-catalog
+
+# Run CLI commands
+node ../cli/dist/cli.js catalog validate
 
 # Or from root
 pnpm test:catalog catalog validate
 
 # Add skill to test catalog
-node dist/cli.js --dev-catalog ../test-catalog catalog skill add test-skill
+cd packages/test-catalog
+node ../cli/dist/cli.js catalog skill add test-skill
 ```
 
 ## Local Usage (Like npx)

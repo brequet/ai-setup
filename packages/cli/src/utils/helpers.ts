@@ -70,17 +70,6 @@ export function toKebabCase(str: string): string {
 }
 
 /**
- * Resolve catalog path (handles --dev-catalog flag)
- */
-export function resolveCatalogPath(devCatalog?: string): string {
-  if (devCatalog) {
-    return path.resolve(process.cwd(), devCatalog);
-  }
-  // Default to current directory for now
-  return process.cwd();
-}
-
-/**
  * Get __dirname equivalent in ESM
  */
 export function getDirname(importMetaUrl: string): string {

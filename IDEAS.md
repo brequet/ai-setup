@@ -117,12 +117,13 @@ cd packages/cli
 pnpm dev                              # tsx watch
 
 # Terminal 2: Test against local catalog
-node dist/cli.js --dev-catalog ../test-catalog catalog skill add new-skill
-node dist/cli.js --dev-catalog ../test-catalog skills --all
+cd packages/test-catalog
+node ../cli/dist/cli.js catalog skill add new-skill
+node ../cli/dist/cli.js skills --all
 
 # Build test catalog
-node dist/cli.js --dev-catalog ../test-catalog catalog build
-node dist/cli.js --dev-catalog ../test-catalog catalog validate
+node ../cli/dist/cli.js catalog build
+node ../cli/dist/cli.js catalog validate
 ```
 
 **Benefits**:
@@ -167,26 +168,7 @@ $ npx @brequet/ai-setup catalog build
 ✓ Catalog ready for commit
 ```
 
-### Dev Mode (`--dev-catalog`)
 
-**Both modes work with local catalogs**:
-
-```bash
-# Prod: Uses GitLab catalogs (default)
-npx @brequet/ai-setup skills --all
-
-# Dev: Points to local folder
-npx @brequet/ai-setup --dev-catalog ./my-catalog skills --all
-npx @brequet/ai-setup --dev-catalog ./my-catalog catalog skill add test
-
-# Works for any local catalog (team, personal, etc.)
-npx @brequet/ai-setup --dev-catalog ../bre-frontend-catalog catalog validate
-```
-
-**Use cases**:
-- CLI development (test against `packages/test-catalog`)
-- Catalog maintainers working locally before push
-- Teams maintaining catalogs outside GitLab
 
 ---
 
@@ -283,19 +265,6 @@ npx @brequet/ai-setup catalog build
 
 # List catalog contents
 npx @brequet/ai-setup catalog list
-```
-
-**Dev Mode**: Target local catalog folder directly (for development + testing)
-
-```bash
-# Point to local catalog during development
-npx @brequet/ai-setup --dev-catalog ./packages/test-catalog skills --all
-
-# Maintain local catalog
-npx @brequet/ai-setup --dev-catalog ./my-team-catalog catalog skill add new-skill
-
-# Works with any catalog (local or remote)
-npx @brequet/ai-setup --dev-catalog ../bre-frontend-catalog catalog validate
 ```
 
 **Multi-team support**: Other teams use same CLI for their catalogs

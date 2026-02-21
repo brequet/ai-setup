@@ -1,5 +1,4 @@
 import chalk from 'chalk';
-import ora, { Ora } from 'ora';
 
 let verbose = false;
 
@@ -31,9 +30,5 @@ export const logger = {
     if (verbose) {
       console.log(chalk.gray('[DEBUG]'), message);
     }
-  },
-
-  spinner(text: string): Ora {
-    return ora(text);
   },
 };

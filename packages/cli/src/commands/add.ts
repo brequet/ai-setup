@@ -1,123 +1,43 @@
-import fs from 'node:fs';
 import path from 'node:path';
 import chalk from 'chalk';
 import { confirm } from '@inquirer/prompts';
 import { logger } from '../utils/logger.js';
+import { ValidationError, GitError } from '../utils/errors.js';
+import { DEFAULT_GIT_BRANCH } from '../utils/constants.js';
 import {
   loadConfig,
   saveConfig,
   addCatalog,
   getNextPriority,
   type CatalogEntry,
-  type UserConfig,
-  trackInstallation,
 } from '../core/config.js';
 import { isGitUrl, cloneOrPullCatalog } from '../utils/git.js';
-import { getCatalogCachePath, getOpenCodeSkillsPath, ensureDir } from '../utils/paths.js';
-import { resolveCatalogPath, checkSkillExists, installSkill } from '../core/installer.js';
+import { getCatalogCachePath, getSkillsDir } from '../utils/paths.js';
+import { resolveCatalogPath, installSkillsBatch } from '../core/installer.js';
 import { discoverSkills, extractCatalogId } from '../core/discovery.js';
+import {
+  validatePathExists,
+  validateSkillsDirectory,
+  validateCatalogNotRegistered,
+} from '../core/validation.js';
 
 interface AddOptions {
   name?: string;
   priority?: number;
   inactive?: boolean;
-  branch?: string; // For Git catalogs
-  yes?: boolean; // Auto-install without prompt
-  install?: boolean; // Set to false by --no-install
+  branch?: string;
+  yes?: boolean;
+  install?: boolean;
 }
 
-/**
- * Install skills from a specific catalog
- */
-async function installSkillsFromCatalog(
-  catalogId: string,
-  entry: CatalogEntry,
-  config: UserConfig,
-  autoConfirm: boolean = false,
-): Promise<void> {
-  const catalogPath = resolveCatalogPath(catalogId, entry);
-  const skills = discoverSkills(catalogPath);
-  const skillCount = skills.size;
-
-  if (skillCount === 0) {
-    return; // No skills to install
-  }
-
-  console.log('');
-  logger.info('Installing skills...\n');
-
-  const targetDir = getOpenCodeSkillsPath();
-  ensureDir(targetDir);
-
-  let successCount = 0;
-  let skippedCount = 0;
-
-  for (const [skillName, skill] of skills) {
-    try {
-      // Check for collisions
-      const existing = checkSkillExists(skillName, config);
-
-      if (existing) {
-        let shouldOverwrite = autoConfirm;
-
-        if (!autoConfirm) {
-          if (existing.type === 'catalog') {
-            const answer = await confirm({
-              message: `Skill '${skillName}' already installed from catalog '${existing.catalogId}'. Overwrite?`,
-              default: false,
-            });
-            shouldOverwrite = answer;
-          } else {
-            const answer = await confirm({
-              message: `Skill '${skillName}' exists (custom skill). Overwrite with version from '${catalogId}'?`,
-              default: false,
-            });
-            shouldOverwrite = answer;
-          }
-        }
-
-        if (!shouldOverwrite) {
-          console.log(chalk.yellow(`⊘ Skipped ${skillName} (already exists)`));
-          skippedCount++;
-          continue;
-        }
-      }
-
-      // Install the skill
-      installSkill(catalogId, catalogPath, skillName, skill, targetDir);
-      trackInstallation(config, skillName, catalogId);
-
-      console.log(chalk.green(`✓ Created ${skillName}`));
-      successCount++;
-    } catch (error) {
-      console.log(chalk.red(`✖ Failed ${skillName}: ${(error as Error).message}`));
-    }
-  }
-
-  // Save config with installed skills
-  saveConfig(config);
-
-  console.log('');
-  if (skippedCount > 0) {
-    logger.info(`Skipped: ${skippedCount} skill${skippedCount === 1 ? '' : 's'} (already exists)`);
-  }
-  logger.success(
-    `Done! ${successCount} skill${successCount === 1 ? '' : 's'} installed to ${targetDir}`,
-  );
-  console.log('');
-}
-
-/**
- * Prompt user to install skills after adding catalog
- */
 async function promptInstallSkills(
   catalogId: string,
   entry: CatalogEntry,
-  config: UserConfig,
   autoConfirm: boolean,
 ): Promise<void> {
+  const config = await loadConfig();
   const catalogPath = resolveCatalogPath(catalogId, entry);
-  const skills = discoverSkills(catalogPath);
+  const skills = await discoverSkills(catalogPath);
   const skillCount = skills.size;
 
   if (skillCount === 0) {
@@ -125,123 +45,140 @@ async function promptInstallSkills(
     return;
   }
 
-  logger.info(`Found ${skillCount} skill${skillCount === 1 ? '' : 's'} in catalog`);
-
   let shouldInstall = autoConfirm;
 
   if (!autoConfirm) {
-    const answer = await confirm({
-      message: `Install ${skillCount} skill${skillCount === 1 ? '' : 's'} now?`,
+    shouldInstall = await confirm({
+      message: `Found ${skillCount} skill${skillCount === 1 ? '' : 's'}. Install now?`,
       default: true,
     });
-    shouldInstall = answer;
+  } else {
+    logger.info(`Found ${skillCount} skill${skillCount === 1 ? '' : 's'} in catalog`);
   }
 
-  if (shouldInstall) {
-    await installSkillsFromCatalog(catalogId, entry, config, autoConfirm);
-  }
-}
-
-/**
- * Add a Git-based catalog
- */
-async function addGitCatalog(url: string, options: AddOptions) {
-  const config = loadConfig();
-
-  // Extract catalog ID from URL
-  const catalogId = extractCatalogId(url);
-
-  // Check if already exists
-  if (config.catalogs[catalogId]) {
-    logger.error(`Catalog "${catalogId}" is already registered`);
+  if (!shouldInstall) {
     return;
   }
 
-  const branch = options.branch || 'main';
+  logger.blank();
+  logger.info('Installing skills...');
+  logger.blank();
+
+  const availableSkills = Array.from(skills.entries()).map(([skillName, skill]) => ({
+    catalogId,
+    catalogEntry: entry,
+    skillName,
+    skill,
+  }));
+
+  const results = await installSkillsBatch(availableSkills, config, {
+    skipPrompts: autoConfirm,
+  });
+
+  for (const result of results) {
+    if (result.error) {
+      logger.print(chalk.red(`✖ Failed ${result.skillName}: ${result.error}`));
+    } else if (result.action === 'skipped') {
+      logger.print(chalk.yellow(`⊘ Skipped ${result.skillName} (already exists)`));
+    } else {
+      logger.print(
+        chalk.green(`✓ ${result.action === 'created' ? 'Created' : 'Updated'} ${result.skillName}`),
+      );
+    }
+  }
+
+  await saveConfig(config);
+
+  const successCount = results.filter((r) => r.action !== 'skipped' && !r.error).length;
+  const skippedCount = results.filter((r) => r.action === 'skipped').length;
+
+  logger.blank();
+  if (skippedCount > 0) {
+    logger.info(`Skipped: ${skippedCount} skill${skippedCount === 1 ? '' : 's'} (already exists)`);
+  }
+  logger.success(
+    `Done! ${successCount} skill${successCount === 1 ? '' : 's'} installed to ${getSkillsDir()}`,
+  );
+  logger.blank();
+}
+
+async function addGitCatalog(url: string, options: AddOptions): Promise<void> {
+  const config = await loadConfig();
+  const catalogId = extractCatalogId(url);
+
+  const validation = validateCatalogNotRegistered(catalogId, config);
+  if (!validation.valid) {
+    throw new ValidationError(validation.error!);
+  }
+
+  const branch = options.branch || DEFAULT_GIT_BRANCH;
   const priority = options.priority ?? getNextPriority(config);
   const active = !options.inactive;
 
   logger.info(`Adding Git catalog: ${catalogId}`);
   logger.info(`  URL: ${url}`);
   logger.info(`  Branch: ${branch}`);
-  console.log('');
+  logger.blank();
 
-  try {
-    // Clone or pull catalog
-    logger.info('Cloning repository...');
-    const result = await cloneOrPullCatalog(catalogId, url, branch);
+  const spinner = logger.spinner('Cloning repository...');
+  const result = await cloneOrPullCatalog(catalogId, url, branch);
 
-    if (!result.success) {
-      throw new Error(result.error || 'Failed to clone repository');
-    }
+  if (!result.success) {
+    spinner.fail('Failed to clone repository');
+    throw new GitError(result.error || 'Failed to clone repository');
+  }
 
-    logger.success('Repository cloned successfully\n');
+  spinner.succeed('Repository cloned successfully');
+  logger.blank();
 
-    // Validate it has a skills directory
-    const cachePath = getCatalogCachePath(catalogId);
-    const skillsDir = path.join(cachePath, 'skills');
-    if (!fs.existsSync(skillsDir)) {
-      throw new Error('Catalog does not have a skills/ directory');
-    }
+  const cachePath = getCatalogCachePath(catalogId);
+  const validation2 = validateSkillsDirectory(cachePath);
+  if (!validation2.valid) {
+    throw new ValidationError(validation2.error!);
+  }
 
-    // Discover skills
-    const skills = discoverSkills(cachePath);
-    logger.info(`Discovered ${skills.size} skill${skills.size === 1 ? '' : 's'}`);
+  const skills = await discoverSkills(cachePath);
+  logger.info(`Discovered ${skills.size} skill${skills.size === 1 ? '' : 's'}`);
 
-    // Add catalog to config
-    const entry: CatalogEntry = {
-      type: 'git',
-      url,
-      branch,
-      priority,
-      active,
-      lastSynced: new Date().toISOString(),
-    };
+  const entry: CatalogEntry = {
+    type: 'git',
+    url,
+    branch,
+    priority,
+    active,
+    lastSynced: new Date().toISOString(),
+  };
 
-    addCatalog(config, catalogId, entry);
-    saveConfig(config);
+  addCatalog(config, catalogId, entry);
+  await saveConfig(config);
 
-    logger.success(`Catalog "${catalogId}" added successfully\n`);
+  logger.success(`Catalog "${catalogId}" added successfully`);
+  logger.blank();
 
-    // Prompt to install skills (if enabled)
-    if (options.install !== false) {
-      await promptInstallSkills(catalogId, entry, config, options.yes || false);
-    }
-  } catch (error) {
-    logger.error(`Failed to add catalog: ${(error as Error).message}`);
-    throw error;
+  if (options.install !== false) {
+    await promptInstallSkills(catalogId, entry, options.yes || false);
   }
 }
 
-/**
- * Add a local catalog
- */
-async function addLocalCatalog(catalogPath: string, options: AddOptions) {
-  const config = loadConfig();
-
-  // Resolve absolute path
+async function addLocalCatalog(catalogPath: string, options: AddOptions): Promise<void> {
+  const config = await loadConfig();
   const absPath = path.resolve(catalogPath);
 
-  // Validate path exists
-  if (!fs.existsSync(absPath)) {
-    logger.error(`Path does not exist: ${absPath}`);
-    return;
+  const pathValidation = validatePathExists(absPath);
+  if (!pathValidation.valid) {
+    throw new ValidationError(pathValidation.error!);
   }
 
-  // Validate it has a skills directory
-  const skillsDir = path.join(absPath, 'skills');
-  if (!fs.existsSync(skillsDir)) {
-    logger.error('Catalog does not have a skills/ directory');
-    return;
+  const skillsDirValidation = validateSkillsDirectory(absPath);
+  if (!skillsDirValidation.valid) {
+    throw new ValidationError(skillsDirValidation.error!);
   }
 
-  // Extract catalog ID from path
   const catalogId = extractCatalogId(absPath);
 
-  // Check if already exists
-  if (config.catalogs[catalogId]) {
-    logger.error(`Catalog "${catalogId}" is already registered`);
-    return;
+  const catalogValidation = validateCatalogNotRegistered(catalogId, config);
+  if (!catalogValidation.valid) {
+    throw new ValidationError(catalogValidation.error!);
   }
 
   const priority = options.priority ?? getNextPriority(config);
@@ -249,48 +186,33 @@ async function addLocalCatalog(catalogPath: string, options: AddOptions) {
 
   logger.info(`Adding local catalog: ${catalogId}`);
   logger.info(`  Path: ${absPath}`);
-  console.log('');
+  logger.blank();
 
-  try {
-    // Discover skills
-    const skills = discoverSkills(absPath);
-    logger.info(`Discovered ${skills.size} skill${skills.size === 1 ? '' : 's'}`);
+  const skills = await discoverSkills(absPath);
+  logger.info(`Discovered ${skills.size} skill${skills.size === 1 ? '' : 's'}`);
 
-    // Add catalog to config
-    const entry: CatalogEntry = {
-      type: 'local',
-      path: absPath,
-      priority,
-      active,
-    };
+  const entry: CatalogEntry = {
+    type: 'local',
+    path: absPath,
+    priority,
+    active,
+  };
 
-    addCatalog(config, catalogId, entry);
-    saveConfig(config);
+  addCatalog(config, catalogId, entry);
+  await saveConfig(config);
 
-    logger.success(`Catalog "${catalogId}" added successfully\n`);
+  logger.success(`Catalog "${catalogId}" added successfully`);
+  logger.blank();
 
-    // Prompt to install skills (if enabled)
-    if (options.install !== false) {
-      await promptInstallSkills(catalogId, entry, config, options.yes || false);
-    }
-  } catch (error) {
-    logger.error(`Failed to add catalog: ${(error as Error).message}`);
-    throw error;
+  if (options.install !== false) {
+    await promptInstallSkills(catalogId, entry, options.yes || false);
   }
 }
 
-/**
- * Add catalog command
- */
 export async function addCommand(catalogPathOrUrl: string, options: AddOptions): Promise<void> {
-  try {
-    if (isGitUrl(catalogPathOrUrl)) {
-      await addGitCatalog(catalogPathOrUrl, options);
-    } else {
-      await addLocalCatalog(catalogPathOrUrl, options);
-    }
-  } catch {
-    // Error already logged
-    process.exit(1);
+  if (isGitUrl(catalogPathOrUrl)) {
+    await addGitCatalog(catalogPathOrUrl, options);
+  } else {
+    await addLocalCatalog(catalogPathOrUrl, options);
   }
 }

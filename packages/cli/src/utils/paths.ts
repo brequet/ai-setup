@@ -1,40 +1,21 @@
 import os from 'node:os';
 import path from 'node:path';
-import fs from 'node:fs';
+import { existsSync } from 'node:fs';
+import { mkdir } from 'node:fs/promises';
 
-/**
- * Get the user's home directory
- */
 export function getHomeDir(): string {
   return os.homedir();
 }
 
-/**
- * Get the AI Setup config directory path
- * Uses: ~/.config/ai-setup/
- */
 export function getConfigDir(): string {
   return path.join(getHomeDir(), '.config', 'ai-setup');
 }
 
-/**
- * Get the user config file path
- * Uses: ~/.config/ai-setup/config.json
- */
-export function getUserConfigPath(): string {
+export function getConfigPath(): string {
   return path.join(getConfigDir(), 'config.json');
 }
 
-/**
- * Detect OpenCode skills directory (Windows-specific with fallbacks)
- * Priority order:
- * 1. %USERPROFILE%\.config\opencode\skills
- * 2. %APPDATA%\opencode\skills
- * 3. %LOCALAPPDATA%\opencode\skills
- *
- * Returns null if none exist
- */
-export function detectOpenCodeSkillsPath(): string | null {
+export function tryDetectSkillsDir(): string | null {
   const homeDir = getHomeDir();
 
   const candidates = [
@@ -52,7 +33,7 @@ export function detectOpenCodeSkillsPath(): string | null {
   ];
 
   for (const candidate of candidates) {
-    if (fs.existsSync(candidate)) {
+    if (existsSync(candidate)) {
       return candidate;
     }
   }
@@ -60,46 +41,32 @@ export function detectOpenCodeSkillsPath(): string | null {
   return null;
 }
 
-/**
- * Get the default OpenCode skills path (first candidate)
- * This is where we'll install if directory doesn't exist yet
- */
-export function getDefaultOpenCodeSkillsPath(): string {
+export function getDefaultSkillsDir(): string {
   const homeDir = getHomeDir();
   return path.join(homeDir, '.config', 'opencode', 'skills');
 }
 
-/**
- * Get OpenCode skills path - detects existing or returns default
- */
-export function getOpenCodeSkillsPath(): string {
-  return detectOpenCodeSkillsPath() || getDefaultOpenCodeSkillsPath();
+export function getSkillsDir(): string {
+  return tryDetectSkillsDir() || getDefaultSkillsDir();
 }
 
-/**
- * Get the catalog cache directory path
- * Uses: ~/.config/ai-setup/.cache/
- */
 export function getCatalogCacheDir(): string {
   return path.join(getConfigDir(), '.cache');
 }
 
-/**
- * Get the cache path for a specific catalog
- * Sanitizes catalog ID for filesystem compatibility
- * Uses: ~/.config/ai-setup/.cache/<sanitizedCatalogId>/
- */
 export function getCatalogCachePath(catalogId: string): string {
-  // Sanitize catalog ID: brequet/bre-ia-catalog → brequet-bre-ia-catalog
   const sanitized = catalogId.replace(/\//g, '-').replace(/\\/g, '-');
   return path.join(getCatalogCacheDir(), sanitized);
 }
 
-/**
- * Ensure a directory exists, creating it if necessary
- */
 export function ensureDir(dirPath: string): void {
-  if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath, { recursive: true });
+  if (!existsSync(dirPath)) {
+    mkdir(dirPath, { recursive: true });
+  }
+}
+
+export async function ensureDirAsync(dirPath: string): Promise<void> {
+  if (!existsSync(dirPath)) {
+    await mkdir(dirPath, { recursive: true });
   }
 }

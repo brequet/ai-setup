@@ -1,4 +1,6 @@
 import chalk from 'chalk';
+import ora, { type Ora } from 'ora';
+import { DIVIDER_WIDTH } from './constants.js';
 
 let verbose = false;
 
@@ -30,5 +32,29 @@ export const logger = {
     if (verbose) {
       console.log(chalk.gray('[DEBUG]'), message);
     }
+  },
+
+  blank() {
+    console.log('');
+  },
+
+  section(title: string) {
+    console.log(chalk.bold(title));
+  },
+
+  divider(char: string = '─', width: number = DIVIDER_WIDTH) {
+    console.log(chalk.dim(char.repeat(width)));
+  },
+
+  dim(message: string) {
+    console.log(chalk.dim(message));
+  },
+
+  print(message: string) {
+    console.log(message);
+  },
+
+  spinner(text: string): Ora {
+    return ora({ text, stream: process.stdout }).start();
   },
 };

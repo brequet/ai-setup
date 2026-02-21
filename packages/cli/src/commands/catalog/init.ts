@@ -1,16 +1,13 @@
-import fs from 'node:fs';
 import path from 'node:path';
 import { input } from '@inquirer/prompts';
 import { logger } from '../../utils/logger.js';
+import { existsSync, ensureDirAsync, writeFileAsync } from '../../utils/fs-async.js';
 
 interface InitOptions {
   name?: string;
 }
 
 export async function catalogInit(options: InitOptions = {}) {
-  logger.info('Initializing new catalog...\n');
-
-  // Gather inputs (args or prompts)
   const name =
     options.name ||
     (await input({
@@ -22,19 +19,17 @@ export async function catalogInit(options: InitOptions = {}) {
 
   logger.debug(`Creating catalog at: ${catalogPath}`);
 
-  // Create directory structure (just skills/)
   const skillsDir = path.join(catalogPath, 'skills');
 
-  if (!fs.existsSync(skillsDir)) {
-    fs.mkdirSync(skillsDir, { recursive: true });
+  if (!existsSync(skillsDir)) {
+    await ensureDirAsync(skillsDir);
     logger.success(`Created skills/ directory`);
   } else {
     logger.info(`skills/ directory already exists`);
   }
 
-  // Create README
   const readmePath = path.join(catalogPath, 'README.md');
-  if (!fs.existsSync(readmePath)) {
+  if (!existsSync(readmePath)) {
     const readme = `# ${name}
 
 A catalog of OpenCode skills.
@@ -106,16 +101,18 @@ bre-ai-setup add https://github.com/your-org/your-catalog
 
 No build step needed - the CLI discovers skills by scanning the skills/ directory!
 `;
-    fs.writeFileSync(readmePath, readme);
+    await writeFileAsync(readmePath, readme);
     logger.success('Created README.md');
   } else {
     logger.info('README.md already exists');
   }
 
-  console.log('\n' + '✨ Catalog initialized successfully!\n');
+  logger.blank();
+  logger.print('✨ Catalog initialized successfully!');
+  logger.blank();
   logger.info(`Next steps:`);
   logger.info(`  1. Add skills: bre-ai-setup catalog skill add <name>`);
   logger.info(`  2. Edit SKILL.md files with your skill instructions`);
   logger.info(`  3. Share your catalog via Git or local path`);
-  console.log('');
+  logger.blank();
 }

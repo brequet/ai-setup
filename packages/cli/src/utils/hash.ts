@@ -1,11 +1,8 @@
 import crypto from 'node:crypto';
-import fs from 'node:fs';
+import { readFileAsync } from './fs-async.js';
 
-/**
- * Compute SHA-256 hash of a file
- */
-export function computeFileHash(filePath: string): string {
-  const content = fs.readFileSync(filePath, 'utf-8');
+export async function computeFileHash(filePath: string): Promise<string> {
+  const content = await readFileAsync(filePath);
   const hash = crypto.createHash('sha256').update(content).digest('hex');
   return `sha256:${hash}`;
 }

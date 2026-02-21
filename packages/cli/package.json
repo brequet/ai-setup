@@ -29,7 +29,8 @@
     "@inquirer/prompts": "^8.2.1",
     "chalk": "^5.4.1",
     "commander": "^12.1.0",
-    "gray-matter": "^4.0.3"
+    "gray-matter": "^4.0.3",
+    "ora": "^9.3.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",

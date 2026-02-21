@@ -1,5 +1,5 @@
 ---
-name: backend-api
+name: backendd
 description: none
 license: MIT
 compatibility: opencode

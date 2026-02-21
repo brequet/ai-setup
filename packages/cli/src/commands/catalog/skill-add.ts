@@ -1,8 +1,10 @@
-import fs from 'node:fs';
 import path from 'node:path';
 import { input } from '@inquirer/prompts';
 import { logger } from '../../utils/logger.js';
-import { toSkillName, validateSkillName, validateSkillDescription } from '../../utils/helpers.js';
+import { ValidationError } from '../../utils/errors.js';
+import { toSkillName } from '../../utils/helpers.js';
+import { validateSkillName, validateSkillDescription } from '../../core/validation.js';
+import { existsSync, ensureDirAsync, writeFileAsync } from '../../utils/fs-async.js';
 
 interface SkillAddOptions {
   description?: string;
@@ -10,9 +12,6 @@ interface SkillAddOptions {
   license?: string;
 }
 
-/**
- * Generate OpenCode-compliant SKILL.md with YAML frontmatter
- */
 const SKILL_TEMPLATE = (name: string, description: string, tags: string[], license?: string) => `---
 name: ${name}
 description: ${description}
@@ -47,15 +46,10 @@ export async function catalogSkillAdd(name?: string, options: SkillAddOptions = 
   const catalogPath = process.cwd();
   const skillsDir = path.join(catalogPath, 'skills');
 
-  // Check if catalog exists (skills/ directory)
-  if (!fs.existsSync(skillsDir)) {
-    logger.error('No catalog found. Run "bre-ai-setup catalog init" first.');
-    process.exit(1);
+  if (!existsSync(skillsDir)) {
+    throw new ValidationError('No catalog found. Run "bre-ai-setup catalog init" first.');
   }
 
-  logger.info('Adding skill to catalog...\n');
-
-  // Gather inputs (args or prompts)
   const rawName =
     name ||
     (await input({
@@ -63,14 +57,11 @@ export async function catalogSkillAdd(name?: string, options: SkillAddOptions = 
       required: true,
     }));
 
-  // Convert and validate skill name
   const skillName = toSkillName(rawName);
   const nameValidation = validateSkillName(skillName);
 
   if (!nameValidation.valid) {
-    logger.error(`Invalid skill name: ${nameValidation.error}`);
-    logger.info(`Suggested: ${skillName}`);
-    process.exit(1);
+    throw new ValidationError(`Invalid skill name: ${nameValidation.error}`);
   }
 
   if (skillName !== rawName.toLowerCase()) {
@@ -88,11 +79,9 @@ export async function catalogSkillAdd(name?: string, options: SkillAddOptions = 
       },
     }));
 
-  // Validate description
   const descValidation = validateSkillDescription(description);
   if (!descValidation.valid) {
-    logger.error(`Invalid description: ${descValidation.error}`);
-    process.exit(1);
+    throw new ValidationError(`Invalid description: ${descValidation.error}`);
   }
 
   const tagsInput =
@@ -109,23 +98,23 @@ export async function catalogSkillAdd(name?: string, options: SkillAddOptions = 
 
   const license = options.license || 'MIT';
 
-  // Create skill directory and SKILL.md
   const skillDir = path.join(skillsDir, skillName);
-  if (fs.existsSync(skillDir)) {
-    logger.error(`Skill "${skillName}" already exists`);
-    process.exit(1);
+  if (existsSync(skillDir)) {
+    throw new ValidationError(`Skill "${skillName}" already exists`);
   }
 
-  fs.mkdirSync(skillDir, { recursive: true });
+  await ensureDirAsync(skillDir);
 
   const skillFilePath = path.join(skillDir, 'SKILL.md');
   const skillContent = SKILL_TEMPLATE(skillName, description, tags, license);
-  fs.writeFileSync(skillFilePath, skillContent);
+  await writeFileAsync(skillFilePath, skillContent);
   logger.success(`Created skills/${skillName}/SKILL.md`);
 
-  console.log('\n' + '✨ Skill added successfully!\n');
+  logger.blank();
+  logger.print('✨ Skill added successfully!');
+  logger.blank();
   logger.info(`Name:  ${skillName}`);
   logger.info(`Path:  skills/${skillName}/SKILL.md`);
   logger.info(`\nNext: Edit skills/${skillName}/SKILL.md to add skill instructions`);
-  console.log('');
+  logger.blank();
 }

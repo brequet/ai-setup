@@ -1,37 +1,23 @@
 import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
-import fs from 'node:fs';
-import { getCatalogCachePath, getCatalogCacheDir, ensureDir } from './paths.js';
+import { existsSync } from 'node:fs';
+import { rm } from 'node:fs/promises';
+import { getCatalogCachePath, getCatalogCacheDir, ensureDirAsync } from './paths.js';
 import { logger } from './logger.js';
+import { DEFAULT_GIT_BRANCH, GIT_CLONE_DEPTH } from './constants.js';
 
 const execAsync = promisify(exec);
 
-/**
- * Result of a Git operation
- */
 export interface GitOperationResult {
   success: boolean;
   error?: string;
 }
 
-/**
- * Check if input string is a Git URL
- * Supports: http://, https://, git://, git@
- */
 export function isGitUrl(input: string): boolean {
-  const gitUrlPatterns = [
-    /^https?:\/\//i, // http:// or https://
-    /^git:\/\//i, // git://
-    /^git@/i, // git@github.com:...
-    /^ssh:\/\//i, // ssh://
-  ];
-
+  const gitUrlPatterns = [/^https?:\/\//i, /^git:\/\//i, /^git@/i, /^ssh:\/\//i];
   return gitUrlPatterns.some((pattern) => pattern.test(input));
 }
 
-/**
- * Check if Git is installed and available
- */
 export async function checkGitAvailable(): Promise<boolean> {
   try {
     await execAsync('git --version');
@@ -41,18 +27,11 @@ export async function checkGitAvailable(): Promise<boolean> {
   }
 }
 
-/**
- * Clone or pull a Git catalog repository
- * - Uses shallow clone (--depth 1) for efficiency
- * - Force pulls to always match remote (even after rebase)
- * - Gracefully handles errors with detailed messages
- */
 export async function cloneOrPullCatalog(
   catalogId: string,
   url: string,
-  branch: string = 'main',
+  branch: string = DEFAULT_GIT_BRANCH,
 ): Promise<GitOperationResult> {
-  // Check if git is available
   const gitAvailable = await checkGitAvailable();
   if (!gitAvailable) {
     return {
@@ -67,30 +46,19 @@ export async function cloneOrPullCatalog(
   logger.debug(`Git operation for ${catalogId} at ${cachePath}`);
 
   try {
-    if (fs.existsSync(cachePath)) {
-      // Repository exists - force pull updates
+    if (existsSync(cachePath)) {
       logger.debug(`Pulling updates for ${catalogId} from ${branch}...`);
 
       try {
-        // Fetch latest changes
         await execAsync(`git fetch origin ${branch}`, { cwd: cachePath });
-
-        // Force reset to remote branch (always trust remote)
         await execAsync(`git reset --hard origin/${branch}`, { cwd: cachePath });
-
         logger.debug(`Successfully pulled ${catalogId}`);
       } catch (pullError) {
-        // If pull fails, try to recover by re-cloning
         logger.debug(`Pull failed, attempting to re-clone: ${(pullError as Error).message}`);
-
-        // Remove corrupted cache
-        fs.rmSync(cachePath, { recursive: true, force: true });
-
-        // Re-clone (fall through to clone logic below)
+        await rm(cachePath, { recursive: true, force: true });
         return await cloneRepository(catalogId, url, branch, cachePath);
       }
     } else {
-      // Repository doesn't exist - clone it
       return await cloneRepository(catalogId, url, branch, cachePath);
     }
 
@@ -100,9 +68,6 @@ export async function cloneOrPullCatalog(
   }
 }
 
-/**
- * Clone a repository with shallow clone
- */
 async function cloneRepository(
   catalogId: string,
   url: string,
@@ -112,12 +77,8 @@ async function cloneRepository(
   logger.debug(`Cloning ${catalogId} from ${url} (branch: ${branch})...`);
 
   try {
-    // Ensure cache directory exists
-    ensureDir(getCatalogCacheDir());
-
-    // Shallow clone (--depth 1) for efficiency
-    await execAsync(`git clone --depth 1 --branch ${branch} ${url} ${cachePath}`);
-
+    await ensureDirAsync(getCatalogCacheDir());
+    await execAsync(`git clone --depth ${GIT_CLONE_DEPTH} --branch ${branch} ${url} ${cachePath}`);
     logger.debug(`Successfully cloned ${catalogId}`);
     return { success: true };
   } catch (error) {
@@ -125,13 +86,9 @@ async function cloneRepository(
   }
 }
 
-/**
- * Handle Git errors with user-friendly messages
- */
 function handleGitError(error: Error): GitOperationResult {
   const errorMsg = error.message.toLowerCase();
 
-  // Repository not found (404)
   if (
     errorMsg.includes('not found') ||
     (errorMsg.includes('repository') && errorMsg.includes('does not exist'))
@@ -142,7 +99,6 @@ function handleGitError(error: Error): GitOperationResult {
     };
   }
 
-  // Authentication/permission issues
   if (
     errorMsg.includes('authentication') ||
     errorMsg.includes('permission') ||
@@ -156,7 +112,6 @@ function handleGitError(error: Error): GitOperationResult {
     };
   }
 
-  // Branch not found
   if (errorMsg.includes('branch') || errorMsg.includes('reference')) {
     return {
       success: false,
@@ -164,7 +119,6 @@ function handleGitError(error: Error): GitOperationResult {
     };
   }
 
-  // Network errors
   if (
     errorMsg.includes('network') ||
     errorMsg.includes('connection') ||
@@ -176,7 +130,6 @@ function handleGitError(error: Error): GitOperationResult {
     };
   }
 
-  // Generic git error
   const firstLine = error.message.split('\n')[0];
   return {
     success: false,
@@ -184,9 +137,6 @@ function handleGitError(error: Error): GitOperationResult {
   };
 }
 
-/**
- * Get the current commit hash from a Git repository
- */
 export async function getCurrentCommitHash(catalogPath: string): Promise<string | null> {
   try {
     const { stdout } = await execAsync('git rev-parse HEAD', { cwd: catalogPath });
@@ -197,9 +147,6 @@ export async function getCurrentCommitHash(catalogPath: string): Promise<string 
   }
 }
 
-/**
- * Get the current branch name from a Git repository
- */
 export async function getCurrentBranch(catalogPath: string): Promise<string | null> {
   try {
     const { stdout } = await execAsync('git rev-parse --abbrev-ref HEAD', { cwd: catalogPath });

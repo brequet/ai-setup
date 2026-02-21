@@ -1,26 +1,19 @@
 import chalk from 'chalk';
 import { confirm, select } from '@inquirer/prompts';
 import { logger } from '../utils/logger.js';
-import {
-  loadConfig,
-  saveConfig,
-  getActiveCatalogs,
-  trackInstallation,
-  untrackInstallation,
-} from '../core/config.js';
-import { getOpenCodeSkillsPath } from '../utils/paths.js';
+import { CLIError } from '../utils/errors.js';
+import { loadConfig, saveConfig, getActiveCatalogs, untrackInstallation } from '../core/config.js';
+import { getSkillsDir } from '../utils/paths.js';
 import { compareWithCatalog, getDiffSummary } from '../core/diff.js';
 import { cloneOrPullCatalog } from '../utils/git.js';
-import fs from 'node:fs';
+import { removeAsync } from '../utils/fs-async.js';
+import { installSkillsBatch } from '../core/installer.js';
 import path from 'node:path';
 
 interface SkillsOptions {
-  yes?: boolean; // Skip confirmations
+  yes?: boolean;
 }
 
-/**
- * Sync all Git catalogs before installing skills
- */
 async function syncGitCatalogs(
   catalogs: Array<{
     id: string;
@@ -30,10 +23,11 @@ async function syncGitCatalogs(
   const gitCatalogs = catalogs.filter((c) => c.entry.type === 'git');
 
   if (gitCatalogs.length === 0) {
-    return; // No git catalogs to sync
+    return;
   }
 
-  logger.info('Syncing Git catalogs...\n');
+  logger.info('Syncing Git catalogs...');
+  logger.blank();
 
   for (const { id, entry } of gitCatalogs) {
     try {
@@ -41,117 +35,102 @@ async function syncGitCatalogs(
 
       if (result.success) {
         logger.debug(`✓ Synced ${id}`);
-
-        // Update lastSynced timestamp
         entry.lastSynced = new Date().toISOString();
       } else {
-        // Graceful degradation: warn but continue
         logger.warn(`⚠ Failed to sync ${id}: ${result.error}`);
         logger.info(`  Using cached version (if available)`);
       }
     } catch (error) {
-      // Graceful degradation: warn but continue
       logger.warn(`⚠ Error syncing ${id}: ${(error as Error).message}`);
       logger.info(`  Using cached version (if available)`);
     }
   }
 
-  console.log('');
+  logger.blank();
 }
 
-/**
- * Interactive mode: Show changes and prompt for confirmation
- */
-async function interactiveMode(options: SkillsOptions) {
-  const config = loadConfig();
+export async function skills(options: SkillsOptions = {}): Promise<void> {
+  const config = await loadConfig();
   const activeCatalogs = getActiveCatalogs(config);
 
   if (activeCatalogs.length === 0) {
-    logger.error('No catalogs registered');
-    logger.info('Add a catalog first: npx @brequet/ai-setup add <catalog-path>');
-    process.exit(1);
+    throw new CLIError(
+      'No catalogs registered. Add a catalog first: npx @brequet/ai-setup add <catalog-path>',
+    );
   }
 
-  // Auto-sync Git catalogs
   await syncGitCatalogs(activeCatalogs);
+  await saveConfig(config);
 
-  // Save config with updated lastSynced timestamps
-  saveConfig(config);
+  logger.dim('Checking for updates...');
+  logger.blank();
 
-  // Compare catalog with installed skills
-  console.log(chalk.dim('Checking for updates...\n'));
-  const diff = compareWithCatalog(config, activeCatalogs);
+  const diff = await compareWithCatalog(config, activeCatalogs);
   const summary = getDiffSummary(diff);
 
-  // No changes detected
   if (!summary.hasChanges) {
-    console.log(chalk.green('✓ Everything is up to date!'));
-    console.log('');
+    logger.print(chalk.green('✓ Everything is up to date!'));
+    logger.blank();
     logger.info(
       `Installed: ${diff.unchanged.length} skill${diff.unchanged.length === 1 ? '' : 's'}`,
     );
-    console.log('');
+    logger.blank();
     return;
   }
 
-  // Show summary
-  console.log(chalk.bold('Changes detected:'));
+  logger.section('Changes detected:');
   if (summary.newCount > 0) {
-    console.log(
+    logger.print(
       chalk.green(
         `  • ${summary.newCount} new skill${summary.newCount === 1 ? '' : 's'} available`,
       ),
     );
   }
   if (summary.updatedCount > 0) {
-    console.log(
+    logger.print(
       chalk.blue(
         `  • ${summary.updatedCount} skill${summary.updatedCount === 1 ? '' : 's'} updated`,
       ),
     );
   }
   if (summary.removedCount > 0) {
-    console.log(
+    logger.print(
       chalk.yellow(
         `  • ${summary.removedCount} skill${summary.removedCount === 1 ? '' : 's'} removed from catalog`,
       ),
     );
   }
-  console.log('');
+  logger.blank();
 
-  // Show new skills
   if (diff.new.length > 0) {
-    console.log(chalk.bold('New skills:'));
+    logger.section('New skills:');
     for (const availableSkill of diff.new) {
-      console.log(
+      logger.print(
         chalk.green(`  + ${availableSkill.skillName}`) +
           chalk.dim(` - ${availableSkill.skill.description}`),
       );
     }
-    console.log('');
+    logger.blank();
   }
 
-  // Show updated skills
   if (diff.updated.length > 0) {
-    console.log(chalk.bold('Updates available:'));
+    logger.section('Updates available:');
     for (const availableSkill of diff.updated) {
-      console.log(chalk.blue(`  ↻ ${availableSkill.skillName}`) + chalk.dim(' - Content updated'));
+      logger.print(chalk.blue(`  ↻ ${availableSkill.skillName}`) + chalk.dim(' - Content updated'));
     }
-    console.log('');
+    logger.blank();
   }
 
-  // Handle removed skills
   let shouldRemoveOrphaned = false;
   if (diff.removed.length > 0) {
-    console.log(chalk.bold('Removed from catalog:'));
+    logger.section('Removed from catalog:');
     for (const removedSkill of diff.removed) {
-      console.log(
+      logger.print(
         chalk.yellow(`  - ${removedSkill.skillName}`) + chalk.dim(' - No longer in any catalog'),
       );
     }
-    console.log('');
+    logger.blank();
 
-    // Ask what to do with removed skills
     const removeAction = await select({
       message: 'Skills removed from catalog. What would you like to do?',
       choices: [
@@ -164,7 +143,6 @@ async function interactiveMode(options: SkillsOptions) {
     shouldRemoveOrphaned = removeAction === 'remove';
   }
 
-  // Ask for confirmation (unless --yes flag)
   let shouldInstall = options.yes || false;
 
   if (!shouldInstall) {
@@ -179,84 +157,54 @@ async function interactiveMode(options: SkillsOptions) {
   }
 
   if (!shouldInstall && !shouldRemoveOrphaned) {
-    console.log(chalk.dim('No changes made'));
-    console.log('');
+    logger.dim('No changes made');
+    logger.blank();
     return;
   }
 
-  console.log('');
+  logger.blank();
 
-  // Install/update skills
   if (shouldInstall && (summary.newCount > 0 || summary.updatedCount > 0)) {
-    const targetDir = getOpenCodeSkillsPath();
-
-    // Combine new and updated skills for installation
     const skillsToInstall = [...diff.new, ...diff.updated];
 
-    for (const availableSkill of skillsToInstall) {
-      const { catalogId, skillName, skill } = availableSkill;
+    const results = await installSkillsBatch(skillsToInstall, config, {
+      skipPrompts: options.yes,
+    });
 
-      try {
-        const action = diff.new.includes(availableSkill) ? 'create' : 'update';
-
-        // Install the skill
-        const sourcePath = skill.sourcePath;
-        const skillDir = path.join(targetDir, skillName);
-
-        if (!fs.existsSync(skillDir)) {
-          fs.mkdirSync(skillDir, { recursive: true });
-        }
-
-        const targetPath = path.join(skillDir, 'SKILL.md');
-        fs.copyFileSync(sourcePath, targetPath);
-
-        // Track installation with simplified schema
-        trackInstallation(config, skillName, catalogId);
-
-        if (action === 'create') {
-          console.log(chalk.green(`✓ Created ${skillName}`));
-        } else {
-          console.log(chalk.blue(`↻ Updated ${skillName}`));
-        }
-      } catch (error) {
-        console.log(chalk.red(`✖ Failed ${skillName}: ${(error as Error).message}`));
+    for (const result of results) {
+      if (result.error) {
+        logger.print(chalk.red(`✖ Failed ${result.skillName}: ${result.error}`));
+      } else if (result.action === 'created') {
+        logger.print(chalk.green(`✓ Created ${result.skillName}`));
+      } else if (result.action === 'updated') {
+        logger.print(chalk.blue(`↻ Updated ${result.skillName}`));
       }
     }
 
-    saveConfig(config);
+    await saveConfig(config);
   }
 
-  // Remove orphaned skills
   if (shouldRemoveOrphaned && diff.removed.length > 0) {
-    const targetDir = getOpenCodeSkillsPath();
+    const targetDir = getSkillsDir();
 
     for (const removedSkill of diff.removed) {
       try {
         const skillName = removedSkill.skillName;
         const skillDir = path.join(targetDir, skillName);
 
-        if (fs.existsSync(skillDir)) {
-          fs.rmSync(skillDir, { recursive: true, force: true });
-        }
-
+        await removeAsync(skillDir);
         untrackInstallation(config, skillName);
-        console.log(chalk.yellow(`✓ Removed ${skillName}`));
+
+        logger.print(chalk.yellow(`✓ Removed ${skillName}`));
       } catch (error) {
-        console.log(chalk.red(`✖ Failed to remove skill: ${(error as Error).message}`));
+        logger.print(chalk.red(`✖ Failed to remove skill: ${(error as Error).message}`));
       }
     }
 
-    saveConfig(config);
+    await saveConfig(config);
   }
 
-  console.log('');
-  console.log(chalk.green('✓ Done!'));
-  console.log('');
-}
-
-/**
- * Main skills command entry point
- */
-export async function skills(options: SkillsOptions = {}) {
-  await interactiveMode(options);
+  logger.blank();
+  logger.print(chalk.green('✓ Done!'));
+  logger.blank();
 }

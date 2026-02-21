@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { setVerbose } from './utils/logger.js';
+import { setVerbose, logger } from './utils/logger.js';
 import { catalogInit } from './commands/catalog/init.js';
 import { catalogSkillAdd } from './commands/catalog/skill-add.js';
 import { catalogValidate } from './commands/catalog/validate.js';
@@ -9,22 +9,20 @@ import { addCommand } from './commands/add.js';
 import { skills } from './commands/skills.js';
 import { list } from './commands/list.js';
 import { sync } from './commands/sync.js';
+import { CLIError } from './utils/errors.js';
+import { EXIT_CODE_ERROR, EXIT_CODE_SIGINT } from './utils/constants.js';
 
-// Graceful CTRL+C handling
 let sigintCount = 0;
 process.on('SIGINT', () => {
   sigintCount++;
-
   if (sigintCount === 1) {
-    console.log('\n\nInterrupted.');
-    process.exit(130);
+    logger.print('\n\nInterrupted.');
+    process.exit(EXIT_CODE_SIGINT);
   } else {
-    // Double CTRL+C - force immediate exit
-    process.exit(130);
+    process.exit(EXIT_CODE_SIGINT);
   }
 });
 
-// Wrap command actions to catch ExitPromptError from @inquirer/prompts
 function wrapAction<T extends any[]>(
   action: (...args: T) => Promise<void>,
 ): (...args: T) => Promise<void> {
@@ -32,12 +30,10 @@ function wrapAction<T extends any[]>(
     try {
       await action(...args);
     } catch (error: any) {
-      // Handle CTRL+C during interactive prompts
       if (error?.name === 'ExitPromptError') {
-        console.log('\nInterrupted.');
-        process.exit(130);
+        logger.print('\nInterrupted.');
+        process.exit(EXIT_CODE_SIGINT);
       }
-      // Re-throw other errors for normal error handling
       throw error;
     }
   };
@@ -144,4 +140,27 @@ program
     }),
   );
 
-program.parse();
+async function main() {
+  try {
+    await program.parseAsync(process.argv);
+  } catch (error) {
+    if (error instanceof CLIError) {
+      logger.error(error.message);
+      process.exit(EXIT_CODE_ERROR);
+    } else if (error instanceof Error) {
+      logger.error(`Unexpected error: ${error.message}`);
+      if (process.env.VERBOSE) {
+        logger.dim(error.stack || '');
+      }
+      process.exit(EXIT_CODE_ERROR);
+    } else {
+      logger.error('An unknown error occurred');
+      process.exit(EXIT_CODE_ERROR);
+    }
+  }
+}
+
+main().catch((error) => {
+  logger.error(`Fatal error: ${error instanceof Error ? error.message : String(error)}`);
+  process.exit(EXIT_CODE_ERROR);
+});

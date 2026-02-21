@@ -1,6 +1,6 @@
 ---
-name: backend-api
-description: none
+name: myskill
+description: nn
 license: MIT
 compatibility: opencode
 metadata:

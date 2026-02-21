@@ -104,7 +104,9 @@ async function promptInstallSkills(
 
 async function addGitCatalog(url: string, options: AddOptions): Promise<void> {
   const config = await loadConfig();
-  const catalogId = extractCatalogId(url);
+
+  let normalizedUrl = normalizeUrl(url);
+  const catalogId = extractCatalogId(normalizedUrl);
 
   const validation = validateCatalogNotRegistered(catalogId, config);
   if (!validation.valid) {
@@ -116,12 +118,12 @@ async function addGitCatalog(url: string, options: AddOptions): Promise<void> {
   const active = !options.inactive;
 
   logger.info(`Adding Git catalog: ${catalogId}`);
-  logger.info(`  URL: ${url}`);
+  logger.info(`  URL: ${normalizedUrl}`);
   logger.info(`  Branch: ${branch}`);
   logger.blank();
 
   const spinner = logger.spinner('Cloning repository...');
-  const result = await cloneOrPullCatalog(catalogId, url, branch);
+  const result = await cloneOrPullCatalog(catalogId, normalizedUrl, branch);
 
   if (!result.success) {
     spinner.fail('Failed to clone repository');
@@ -142,7 +144,7 @@ async function addGitCatalog(url: string, options: AddOptions): Promise<void> {
 
   const entry: CatalogEntry = {
     type: 'git',
-    url,
+    url: normalizedUrl,
     branch,
     priority,
     active,
@@ -215,4 +217,15 @@ export async function addCommand(catalogPathOrUrl: string, options: AddOptions):
   } else {
     await addLocalCatalog(catalogPathOrUrl, options);
   }
+}
+
+function normalizeUrl(url: string): string {
+  let normalized = url.trim();
+  if (!/^(https?:\/\/|git:\/\/|git@|ssh:\/\/)/i.test(normalized)) {
+    normalized = `https://${normalized}`;
+  }
+  if (!normalized.endsWith('.git')) {
+    normalized = `${normalized}.git`;
+  }
+  return normalized;
 }

@@ -14,7 +14,15 @@ export interface GitOperationResult {
 }
 
 export function isGitUrl(input: string): boolean {
-  const gitUrlPatterns = [/^https?:\/\//i, /^git:\/\//i, /^git@/i, /^ssh:\/\//i];
+  const gitUrlPatterns = [
+    /^https?:\/\//i,
+    /^git:\/\//i,
+    /^git@/i,
+    /^ssh:\/\//i,
+    /^github\.com\//i,
+    /^gitlab\.com\//i,
+    /^bitbucket\.org\//i,
+  ];
   return gitUrlPatterns.some((pattern) => pattern.test(input));
 }
 

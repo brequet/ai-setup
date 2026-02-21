@@ -1,205 +1,89 @@
 # @brequet/agent-sync
 
-TUI TypeScript CLI tool for managing AI agent catalogs, OpenCode skills, and MCP configurations.
+A CLI tool for teams to manage and synchronize AI agent "catalogs". Currently focused on OpenCode skills, with planned support for MCP configurations, settings, and system prompts.
 
-## Project Structure
+## Purpose
 
-```
-agent-sync-poc/
-├── packages/
-│   ├── cli/                    # @brequet/agent-sync CLI package
-│   │   ├── src/
-│   │   │   ├── cli.ts         # Entry point
-│   │   │   ├── commands/      # Command implementations
-│   │   │   ├── core/          # Core logic (schemas, catalog ops)
-│   │   │   └── utils/         # Utilities (logger, hash, helpers)
-│   │   ├── dist/              # Built output
-│   │   └── package.json
-│   └── test-catalog/          # Test catalog for development
-│       ├── skills/
-│       ├── mcp/
-│       ├── meta/
-│       │   └── catalog.json
-│       └── README.md
-├── pnpm-workspace.yaml
-└── README.md
-```
-
-## Features
-
-✅ **Catalog Management**
-- Create new catalogs with `catalog new`
-- Add skills with `catalog skill add`
-- Validate catalog structure and hashes
-- Build/rebuild catalog metadata
-
-✅ **OpenCode Spec Compliant**
-- YAML frontmatter in SKILL.md files
-- Name validation (lowercase, alphanumeric, hyphens)
-- Description length validation (1-1024 chars)
-- Automatic name normalization
-- Frontmatter validation in `catalog validate`
-
-✅ **Modern CLI UX**
-- Interactive prompts with fallback to CLI args
-- Colored output with chalk
-- Structured logging with `--verbose` flag
-- Spinners for long operations
-
-✅ **Type-Safe**
-- Full TypeScript implementation
-- Zod schemas for validation
-- Type inference from schemas
-
-## Development
-
-### Setup
-
-```bash
-# Install dependencies
-pnpm install
-
-# Build CLI
-cd packages/cli
-pnpm build
-```
-
-### Local Development
-
-```bash
-# Terminal 1: Watch mode
-cd packages/cli
-pnpm dev
-
-# Terminal 2: Test commands (navigate to catalog first)
-cd packages/test-catalog
-node ../cli/dist/cli.js catalog validate
-```
-
-### Commands
-
-#### Catalog Commands (Maintainer)
-
-```bash
-# Create new catalog
-agent-sync catalog new
-agent-sync catalog new --name "My Catalog" --id "my-catalog"
-
-# Add skill (OpenCode spec-compliant)
-agent-sync catalog skill add
-agent-sync catalog skill add git-release \
-  --description "Create consistent releases and changelogs" \
-  --tags "git,release,changelog" \
-  --license "MIT"
-
-# Name normalization examples
-agent-sync catalog skill add "My Cool Skill"    # → my-cool-skill
-agent-sync catalog skill add "PR Review!!!"     # → pr-review
-
-# Validate catalog (checks frontmatter, names, hashes)
-agent-sync catalog validate
-agent-sync catalog validate --verbose
-
-# Build catalog (regenerate hashes)
-agent-sync catalog build
-```
-
-#### Global Flags
-
-```bash
---verbose              # Enable debug logging
-```
+`agent-sync` allows dev teams to share AI agent capabilities (skills) via shared repositories or local paths. Team members can push new skills to a central catalog (like a git repository), and others can instantly synchronize those skills to their local environment.
 
 ## Usage
 
-### As Local Package (Development)
+This tool is designed to be run via `npx` to ensure you always have the latest version without a global installation.
 
 ```bash
-cd packages/cli
-pnpm link --global
-agent-sync catalog new
+npx @brequet/agent-sync@latest [command]
+
 ```
 
-### As npx Package (After Publish)
+### 1. Add a Catalog
+
+Register a team catalog (Git repository or local directory).
 
 ```bash
-npx @brequet/agent-sync@latest catalog new
-npx @brequet/agent-sync@latest catalog skill add my-skill
-```
-
-## Architecture Decisions
-
-- **Monorepo**: pnpm workspace for tight CLI ↔ catalog feedback loop
-- **Logger**: Custom chalk-based (simple, no overhead)
-- **Validation**: Zod schemas (type-safe, better DX)
-- **Hash**: SHA-256 via Node.js crypto (simple, sufficient)
-- **UX**: Args + interactive fallback (flexible, modern)
-
-## OpenCode Spec Compliance
-
-This tool generates **OpenCode-compliant** SKILL.md files:
-
-### YAML Frontmatter (Required)
-
-```yaml
----
-name: my-skill
-description: Brief description of what this skill does
-license: MIT
-compatibility: opencode
-metadata:
-  tags: tag1, tag2, tag3
----
-```
-
-### Name Validation
-
-Skill names must follow OpenCode spec:
-- 1-64 characters
-- Lowercase alphanumeric with single hyphen separators
-- No leading/trailing hyphens
-- No consecutive hyphens
-- Regex: `^[a-z0-9]+(-[a-z0-9]+)*$`
-
-**Examples:**
-- ✅ `git-release` - Valid
-- ✅ `pr-review` - Valid
-- ✅ `my-cool-skill` - Valid
-- ❌ `My-Skill` - Uppercase
-- ❌ `-my-skill` - Leading hyphen
-- ❌ `my--skill` - Consecutive hyphens
-
-### Description Validation
-
-- Must be 1-1024 characters
-- Should be specific enough for agents to choose correctly
-
-### Directory Structure
+npx @brequet/agent-sync@latest add https://github.com/your-team/agent-catalog.git
 
 ```
-skills/
-  my-skill/
-    SKILL.md       # Name in frontmatter must match directory
+
+### 2. Synchronize Skills
+
+Update your local catalogs and interactively select skills to install or update.
+
+```bash
+npx @brequet/agent-sync@latest sync
+npx @brequet/agent-sync@latest skills
+
 ```
 
-The CLI automatically:
-- Normalizes names to valid format
-- Validates frontmatter on `catalog validate`
-- Checks name/directory consistency
-- Verifies description length
+### 3. List Status
 
-## Next Steps
+View registered catalogs and currently installed skills.
 
-See [IDEAS.md](./IDEAS.md) for full implementation roadmap.
+```bash
+npx @brequet/agent-sync@latest list
 
-### Phase 2 (Consumer Commands)
-- `init` - First-time setup
-- `sync` - Update catalog cache
-- `skills` - Install/update skills
-- `mcp` - Configure MCP servers
+```
 
-### Future
-- Multi-catalog support
-- Git integration
-- VS Code extension
-- Web UI for catalog browsing
+## Core Commands
+
+| Command      | Description                                                       |
+| ------------ | ----------------------------------------------------------------- |
+| `add <path>` | Register a new catalog (Git URL or local path).                   |
+| `sync`       | Fetch updates for all Git-based catalogs.                         |
+| `skills`     | Interactive prompt to install or update skills from catalogs.     |
+| `list`       | Show registered catalogs and installed skill status.              |
+| `catalog`    | Maintainer commands to initialize and manage a catalog structure. |
+
+## Creating a Catalog (Maintainers)
+
+Teams can create their own catalogs to distribute skills. A catalog is simply a directory or repository with a `skills/` folder.
+
+1. **Initialize a new catalog:**
+
+```bash
+mkdir my-team-catalog && cd my-team-catalog
+npx @brequet/agent-sync@latest catalog init
+
+```
+
+2. **Add a new skill:**
+
+```bash
+npx @brequet/agent-sync@latest catalog skill add my-new-skill
+
+```
+
+This creates a folder in `skills/my-new-skill/` with a `SKILL.md` file containing the instructions and metadata for the agent. 
+
+3. **Distribute:**
+Push the directory to a Git repository. Your team can then run `npx @brequet/agent-sync add <your-repo-url>` to start using it.
+
+## Roadmap
+
+- [x] **Skills:** Sync and install OpenCode skill definitions.
+- [ ] **MCP:** Manage Model Context Protocol configurations.
+- [ ] **Settings:** Sync OpenCode/IDE settings and keybindings.
+- [ ] **Prompts:** Centralized management of system prompts.
+
+## License
+
+MIT

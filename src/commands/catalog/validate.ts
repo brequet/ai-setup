@@ -11,7 +11,9 @@ export async function catalogValidate() {
   const skillsDir = path.join(catalogPath, 'skills');
 
   if (!existsSync(skillsDir)) {
-    throw new ValidationError('No catalog found. Run "npx @brequet/agent-sync catalog init" first.');
+    throw new ValidationError(
+      'No catalog found. Run "npx @brequet/agent-sync catalog init" first.',
+    );
   }
 
   logger.info('Validating catalog...');

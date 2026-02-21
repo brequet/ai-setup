@@ -72,9 +72,10 @@ npx @brequet/agent-sync@latest catalog skill add my-new-skill
 
 ```
 
-This creates a folder in `skills/my-new-skill/` with a `SKILL.md` file containing the instructions and metadata for the agent. 
+This creates a folder in `skills/my-new-skill/` with a `SKILL.md` file containing the instructions and metadata for the agent.
 
 3. **Distribute:**
+
 Push the directory to a Git repository. Your team can then run `npx @brequet/agent-sync add <your-repo-url>` to start using it.
 
 ## Roadmap
